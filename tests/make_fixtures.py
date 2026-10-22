@@ -59,6 +59,7 @@ FIXTURES: list[tuple[str, str, list[str]]] = [
         ["CONTRACT_INVALID"],
     ),
     (
+        "09_duplicate_header_names.tsv",
         "sampleID\tfeatureID\tcount\tcount\ns1\tf1\t10\t10\n",
         ["CONTRACT_INVALID"],
     ),

@@ -1,7 +1,9 @@
 {
+  "id": "ingest-fixture",
   "format": "Biological Observation Matrix 1.0.0",
   "format_url": "http://biom-format.org",
   "type": "OTU table",
+  "generated_by": "make_ingest_fixtures.py",
   "date": "2026-08-12T00:00:00",
   "matrix_type": "sparse",
   "matrix_element_type": "int",

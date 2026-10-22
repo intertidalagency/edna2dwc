@@ -1,3 +1,4 @@
+from maintenance.eml_schema import find_schema_locations, rewrite_schema_locations
 
 
 def test_find_schema_locations_extracts_every_reference():
@@ -18,6 +19,7 @@ def test_find_schema_locations_returns_empty_list_when_none_present():
 def test_rewrite_schema_locations_points_a_relative_reference_at_itself():
     text = '<xs:import schemaLocation="eml-gbif-profile.xsd"/>'
     rewritten = rewrite_schema_locations(text, ["eml-gbif-profile.xsd"])
+    assert rewritten == text
 
 
 def test_rewrite_schema_locations_rewrites_a_known_absolute_url():

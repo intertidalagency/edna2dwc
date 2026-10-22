@@ -5,7 +5,9 @@ from dataclasses import dataclass
 import hashlib
 from pathlib import Path
 
+from edna2dwc.common.tsv import detect_file_delimiter, open_text
 
+_HEADER_SAMPLE_LINES = 22
 
 _MASK_64 = (1 << 64) - 1
 
@@ -30,6 +32,8 @@ def _id_hash(id_value: str) -> int:
 
 
 def _has_header(path: Path) -> bool:
+    with open_text(path) as f:
+        sample_lines = [line for _, line in zip(range(_HEADER_SAMPLE_LINES), f)]
     if len(sample_lines) < 2:
         return False
     try:
@@ -39,11 +43,13 @@ def _has_header(path: Path) -> bool:
 
 
 def fingerprint_file(path: Path) -> Fingerprint:
+    delimiter = detect_file_delimiter(path)
     skip_header = _has_header(path)
     n_rows = 0
     total = 0.0
     xor_hash = 0
     seen_ids: set[str] = set()
+    with open_text(path) as f:
         for i, line in enumerate(f):
             row = line.rstrip("\n").split(delimiter)
             if not row or not row[0]:

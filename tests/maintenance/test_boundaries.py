@@ -1,3 +1,4 @@
+from maintenance.boundaries import _country_code, build_boundary_set
 
 
 def test_country_code_prefers_iso_a2_when_well_formed():

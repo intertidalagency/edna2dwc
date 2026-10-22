@@ -1,10 +1,57 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+import pytest
+
+from edna2dwc.build.classify_samples import classify
+from edna2dwc.build.exclude_taxa import exclude, human_taxa
+from edna2dwc.build.filter_controls import (
     classification_from_report_row,
     classify_sample,
+    control_samples,
     match_keywords,
     tokenize,
 )
+from edna2dwc.common.findings import FindingsLog
+from tests.tables import dicts, table_of
+
+
+@dataclass
+class Removed:
+    kept_rows: list[dict[str, str]]
+    excluded_rows: list[dict[str, str]]
+    findings: FindingsLog
+
+
+def remove_controls(rows, roster) -> Removed:
+    table = table_of(rows)
+    result = exclude(
+        table,
+        controls=control_samples(table.con, roster),
+        humans=human_taxa(table),
+        drop_human=False,
+        excluded_kingdoms_by_marker=None,
+    )
+    return Removed(dicts(result.kept), dicts(result.excluded), result.findings)
+
+
+def filter_controls(rows, **classify_options) -> Removed:
+    classified = classify(table_of(rows), **classify_options)
+    result = remove_controls(rows, classified.roster)
+    result.findings.findings[:0] = classified.findings.findings
+    return result
+
+
+def _roster_row(sample_id, kind, action, keyword="", basis="none"):
+    return {
+        "sampleID": sample_id,
+        "type": kind,
+        "basis": basis,
+        "matched_keyword": keyword,
+        "action": action,
+        "row_count": "1",
+    }
 
 
 def test_tokenize_splits_on_case_and_digit_transitions():
@@ -28,6 +75,7 @@ def test_multiword_keyword_beats_its_own_component_word():
     assert classify_sample("ExtractionBlank01").matched_keyword == "extraction blank"
 
 
+def test_short_keyword_only_match_is_kept_and_disclosed():
     classification = classify_sample("NC1")
     assert classification.is_control
     assert classification.is_ambiguous
@@ -40,19 +88,28 @@ def test_multiword_keyword_beats_its_own_component_word():
     result = filter_controls(rows)
     assert len(result.kept_rows) == 6
     assert result.excluded_rows == []
+    codes = [f.code for f in result.findings.findings]
+    assert codes.count("CONTROL_AMBIGUOUS") == 6
 
 
+def test_a_confident_keyword_match_excludes_without_asking():
     rows = [
         {"sampleID": "ExtractionBlank01", "featureID": "f1", "count": "1"},
         {"sampleID": "RealSample01", "featureID": "f2", "count": "1"},
     ]
     result = filter_controls(rows)
     assert [r["sampleID"] for r in result.kept_rows] == ["RealSample01"]
+    assert [(row["sampleID"], row["exclusion_reason"]) for row in result.excluded_rows] == [
+        ("ExtractionBlank01", "control:extraction blank")
+    ]
     codes = [f.code for f in result.findings.findings]
     assert "CONTROL_EXCLUDED" in codes
+    assert "CONTROL_AMBIGUOUS" not in codes
 
 
+def test_metadata_type_column_tier_one_takes_precedence_and_excludes():
     rows = [{"sampleID": "S1", "featureID": "f1", "count": "1"}]
+    result = filter_controls(rows, sample_types={"S1": "blank"})
     assert result.kept_rows == []
     assert result.excluded_rows[0]["sampleID"] == "S1"
 
@@ -102,6 +159,39 @@ def test_leakage_check_matches_the_resolved_taxon_not_the_feature_id():
     assert ("PositiveControl1", "asv_pc") not in kept_ids
 
 
+def test_only_positive_controls_seed_the_leakage_taxa_not_every_control():
+    rows = [
+        {
+            "sampleID": "ExtractionBlank01",
+            "featureID": "asv_contam",
+            "count": "3",
+            "scientificName": "Pseudomonas",
+        },
+        {
+            "sampleID": "MockCommunity1",
+            "featureID": "asv_spike",
+            "count": "50",
+            "scientificName": "Macropus giganteus",
+        },
+        {
+            "sampleID": "FieldSample1",
+            "featureID": "asv_pseudo",
+            "count": "8",
+            "scientificName": "Pseudomonas",
+        },
+    ]
+    result = filter_controls(rows)
+
+    assert classify_sample("ExtractionBlank01").is_positive_control is False
+    assert classify_sample("MockCommunity1").is_positive_control is True
+
+    leaked = [f.message for f in result.findings.findings if f.code == "CONTROL_TAXON_LEAKAGE"]
+    assert leaked == [], leaked
+
+    kept_ids = {(r["sampleID"], r["featureID"]) for r in result.kept_rows}
+    assert ("FieldSample1", "asv_pseudo") in kept_ids
+
+
 def test_classification_from_report_row_round_trips_a_kept_sample():
     row = {
         "sampleID": "RealSample01",
@@ -132,10 +222,60 @@ def test_classification_from_report_row_recognizes_a_positive_control():
     assert c.is_positive_control is True
 
 
+def test_remove_controls_honors_a_hand_edited_classification():
     rows = [
         {"sampleID": "NC1", "featureID": "f1", "count": "1"},
         {"sampleID": "RealSample01", "featureID": "f2", "count": "1"},
     ]
+    roster = [
+        _roster_row("NC1", "control", "excluded", "nc", basis="answer"),
+        _roster_row("RealSample01", "sample", "kept"),
     ]
+    result = remove_controls(rows, roster)
+    assert {r["sampleID"] for r in result.kept_rows} == {"RealSample01"}
+    assert "CONTROL_AMBIGUOUS" not in [f.code for f in result.findings.findings]
 
 
+def test_removing_controls_does_not_disclose_an_ambiguous_sample_a_second_time():
+    rows = [{"sampleID": "NC1", "featureID": "f1", "count": "1"}]
+    roster = [_roster_row("NC1", "control", "ambiguous", "nc", basis="sample_id_string_match")]
+
+    result = remove_controls(rows, roster)
+
+    assert [f.code for f in result.findings.findings] == []
+
+
+@pytest.mark.parametrize("sample_id", ["FC_NegPCR", "negpcr1", "PCR-Neg-2"])
+def test_a_pcr_negative_written_neg_pcr_is_a_confident_control(sample_id):
+    classification = classify_sample(sample_id)
+    assert classification.is_control
+    assert not classification.is_ambiguous
+
+
+def test_a_bare_neg_is_an_ambiguous_control_keyword():
+    classification = classify_sample("Site4-Neg")
+    assert classification.is_control
+    assert classification.is_ambiguous
+    assert classification.matched_keyword == "neg"
+
+
+@pytest.mark.parametrize(
+    "value", ["rtsf blank", "PCR negative control", "Field Blank", "extraction blank"]
+)
+def test_a_type_value_naming_a_control_in_words_classifies_it(value):
+    classification = classify_sample("SAMPLE_1", metadata_type=value)
+    assert classification.is_control
+    assert classification.basis == "sample_metadata"
+    assert not classification.is_ambiguous
+
+
+def test_a_type_value_with_only_a_weak_keyword_asks():
+    classification = classify_sample("S7", metadata_type="NC")
+    assert classification.is_control
+    assert classification.is_ambiguous
+    assert classification.basis == "sample_metadata"
+
+
+def test_a_type_value_naming_no_control_leaves_the_sample_id_to_decide():
+    assert not classify_sample("Station4", metadata_type="seawater").is_control
+    assert classify_sample("FieldBlank02", metadata_type="seawater").is_control

@@ -3,10 +3,12 @@
     "class": "DNADerivedData",
     "expects": [
       {
+        "severity": "warning",
         "then": "target_gene"
       }
     ],
     "format": "dna_sequence",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.gbif.org/terms/dna_sequence"
   },
@@ -67,6 +69,7 @@
   "ampliconSize": {
     "class": "DNADerivedData",
     "format": "nonneg_number",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/ampliconSize"
   },
@@ -89,6 +92,7 @@
         "with": "annealingTempUnit"
       }
     ],
+    "priority_tier": "required",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/annealingTemp"
   },
@@ -100,6 +104,7 @@
         "with": "annealingTemp"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/annealingTempUnit"
   },
@@ -146,6 +151,7 @@
   "associatedSequences": {
     "class": "MaterialEntity",
     "format": "pipe_list",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/associatedSequences"
   },
@@ -166,6 +172,7 @@
   },
   "baselineValue": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/baselineValue"
   },
@@ -173,6 +180,7 @@
     "class": "record-level",
     "default": "MaterialSample",
     "format": "controlled",
+    "priority_tier": "required",
     "tier": "required",
     "uri": "http://rs.tdwg.org/dwc/terms/basisOfRecord",
     "vocabulary": [
@@ -241,6 +249,7 @@
   },
   "class": {
     "class": "Taxon",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/class"
   },
@@ -312,6 +321,7 @@
   "coordinateUncertaintyInMeters": {
     "class": "Location",
     "format": "nonneg_number",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/coordinateUncertaintyInMeters"
   },
@@ -323,6 +333,7 @@
   "countryCode": {
     "class": "Location",
     "format": "iso3166_alpha2",
+    "priority_tier": "required",
     "tier": "optional",
     "uri": "http://rs.tdwg.org/dwc/terms/countryCode"
   },
@@ -338,6 +349,7 @@
   },
   "dataGeneralizations": {
     "class": "record-level",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.tdwg.org/dwc/terms/dataGeneralizations"
   },
@@ -348,6 +360,7 @@
   },
   "datasetName": {
     "class": "record-level",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/datasetName"
   },
@@ -365,6 +378,7 @@
     "class": "Location",
     "expects": [
       {
+        "severity": "warning",
         "then": "geodeticDatum"
       },
       {
@@ -379,6 +393,7 @@
         "with": "decimalLongitude"
       }
     ],
+    "priority_tier": "required",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/decimalLatitude"
   },
@@ -391,6 +406,7 @@
         "with": "decimalLatitude"
       }
     ],
+    "priority_tier": "required",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/decimalLongitude"
   },
@@ -509,6 +525,7 @@
         "with": "eventID"
       }
     ],
+    "priority_tier": "required",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/eventDate"
   },
@@ -521,6 +538,7 @@
         "with": "eventDate"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "required_if_event_core",
     "uri": "http://rs.tdwg.org/dwc/terms/eventID"
   },
@@ -556,6 +574,7 @@
   },
   "family": {
     "class": "Taxon",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/family"
   },
@@ -591,7 +610,14 @@
   },
   "footprintWKT": {
     "class": "Location",
+    "expects": [
+      {
+        "severity": "warning",
+        "then": "footprintSRS"
+      }
+    ],
     "format": "wkt",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.tdwg.org/dwc/terms/footprintWKT"
   },
@@ -607,11 +633,13 @@
   },
   "genus": {
     "class": "Taxon",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/genus"
   },
   "geodeticDatum": {
     "class": "Location",
+    "priority_tier": "required",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/geodeticDatum"
   },
@@ -712,11 +740,14 @@
   },
   "identificationReferences": {
     "class": "Identification",
+    "format": "pipe_list",
+    "priority_tier": "recommended",
     "tier": "optional",
     "uri": "http://rs.tdwg.org/dwc/terms/identificationReferences"
   },
   "identificationRemarks": {
     "class": "Identification",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/identificationRemarks"
   },
@@ -747,6 +778,7 @@
   },
   "informationWithheld": {
     "class": "record-level",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.tdwg.org/dwc/terms/informationWithheld"
   },
@@ -762,6 +794,7 @@
   },
   "institutionCode": {
     "class": "record-level",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/institutionCode"
   },
@@ -792,6 +825,7 @@
   },
   "kingdom": {
     "class": "Taxon",
+    "priority_tier": "required",
     "tier": "required_if_occurrence_core",
     "uri": "http://rs.tdwg.org/dwc/terms/kingdom"
   },
@@ -918,6 +952,7 @@
   },
   "materialSampleID": {
     "class": "MaterialSample",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/materialSampleID"
   },
@@ -930,6 +965,7 @@
         "with": "minimumDepthInMeters"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/maximumDepthInMeters"
   },
@@ -1009,6 +1045,7 @@
         "with": "maximumDepthInMeters"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/minimumDepthInMeters"
   },
@@ -1104,6 +1141,7 @@
   },
   "occurrenceID": {
     "class": "Occurrence",
+    "priority_tier": "required",
     "tier": "required",
     "uri": "http://rs.tdwg.org/dwc/terms/occurrenceID"
   },
@@ -1116,6 +1154,7 @@
     "class": "Occurrence",
     "default": "present",
     "format": "controlled",
+    "priority_tier": "required",
     "tier": "required_if_occurrence_core",
     "uri": "http://rs.tdwg.org/dwc/terms/occurrenceStatus",
     "vocabulary": [
@@ -1125,6 +1164,7 @@
   },
   "order": {
     "class": "Taxon",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/order"
   },
@@ -1147,6 +1187,7 @@
         "with": "organismQuantityType"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/organismQuantity"
   },
@@ -1158,6 +1199,7 @@
         "with": "organismQuantity"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/organismQuantityType"
   },
@@ -1189,16 +1231,19 @@
   "otu_class_appr": {
     "class": "DNADerivedData",
     "format": "controlled",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000085"
   },
   "otu_db": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000087"
   },
   "otu_seq_comp_appr": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000086"
   },
@@ -1249,6 +1294,7 @@
   },
   "pcr_cond": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000049"
   },
@@ -1260,36 +1306,43 @@
         "then": "pcr_primer_name_forward"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.gbif.org/terms/pcr_primer_forward"
   },
   "pcr_primer_lod": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/pcr_primer_lod"
   },
   "pcr_primer_loq": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/pcr_primer_loq"
   },
   "pcr_primer_name_forward": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.gbif.org/terms/pcr_primer_name_forward"
   },
   "pcr_primer_name_reverse": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.gbif.org/terms/pcr_primer_name_reverse"
   },
   "pcr_primer_reference": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/pcr_primer_reference"
   },
   "pcr_primer_reverse": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.gbif.org/terms/pcr_primer_reverse"
   },
@@ -1300,6 +1353,7 @@
   },
   "phylum": {
     "class": "Taxon",
+    "priority_tier": "recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/phylum"
   },
@@ -1340,11 +1394,13 @@
   },
   "probeQuencher": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/probeQuencher"
   },
   "probeReporter": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/probeReporter"
   },
@@ -1386,6 +1442,7 @@
   "recordedBy": {
     "class": "Occurrence",
     "format": "pipe_list",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/recordedBy"
   },
@@ -1462,6 +1519,7 @@
         "with": "sampleSizeValue"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/sampleSizeUnit"
   },
@@ -1474,6 +1532,7 @@
         "with": "sampleSizeUnit"
       }
     ],
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/sampleSizeValue"
   },
@@ -1494,6 +1553,7 @@
   },
   "samplingProtocol": {
     "class": "Event",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/samplingProtocol"
   },
@@ -1505,6 +1565,7 @@
         "with": "scientificNameID"
       }
     ],
+    "priority_tier": "required",
     "tier": "required",
     "uri": "http://rs.tdwg.org/dwc/terms/scientificName"
   },
@@ -1522,12 +1583,14 @@
         "with": "scientificName"
       }
     ],
+    "priority_tier": "required",
     "tier": "required_if_occurrence_core",
     "uri": "http://rs.tdwg.org/dwc/terms/scientificNameID"
   },
   "seq_meth": {
     "class": "DNADerivedData",
     "format": "controlled",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000050"
   },
@@ -1568,6 +1631,7 @@
   },
   "sop": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000090"
   },
@@ -1633,11 +1697,13 @@
   },
   "target_gene": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000044"
   },
   "target_subfragment": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "https://w3id.org/gensc/terms/MIXS:0000045"
   },
@@ -1664,12 +1730,14 @@
   },
   "taxonID": {
     "class": "Taxon",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/taxonID"
   },
   "taxonRank": {
     "class": "Taxon",
     "format": "controlled",
+    "priority_tier": "strongly_recommended",
     "tier": "recommended",
     "uri": "http://rs.tdwg.org/dwc/terms/taxonRank",
     "vocabulary": [
@@ -1742,6 +1810,7 @@
   },
   "thresholdQuantificationCycle": {
     "class": "DNADerivedData",
+    "priority_tier": "strongly_recommended",
     "tier": "optional",
     "uri": "http://rs.gbif.org/terms/miqe/thresholdQuantificationCycle"
   },

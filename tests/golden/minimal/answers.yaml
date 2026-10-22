@@ -1,0 +1,37 @@
+dataset_id: golden-minimal
+created: '2026-01-01T00:00:00Z'
+out_dir: archive
+metadata:
+  abstract:
+    value: Synthetic bacterial survey used as a golden archive.
+    provenance: 'abstract'
+    confirmed: 'A Researcher'
+  contacts:
+    value:
+    - surname: A Researcher
+    provenance: 'contacts'
+    confirmed: 'A Researcher'
+  creators:
+    value:
+    - surname: A Researcher
+    provenance: 'creators'
+    confirmed: 'A Researcher'
+  license:
+    value: CC0-1.0
+    provenance: 'license'
+    confirmed: 'A Researcher'
+  pub_date:
+    value: '2026-01-01'
+    provenance: 'pub_date'
+    confirmed: 'A Researcher'
+  title:
+    value: 'Golden archive: minimal'
+    provenance: 'title'
+    confirmed: 'A Researcher'
+markers:
+  16S:
+    target: prokaryotes
+    provenance: 'methods (16S V4 primers 515F/806R target prokaryotes)'
+    confirmed: 'A Researcher'
+taxonomy:
+  require_confident: false

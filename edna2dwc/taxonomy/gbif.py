@@ -5,11 +5,20 @@ from pathlib import Path
 
 import httpx
 
+from edna2dwc.taxonomy import api_usage, register_http
+from edna2dwc.taxonomy.match_cache import MatchCache
+from edna2dwc.taxonomy.register_http import TIMEOUT
 
 BASE_URL = "https://api.gbif.org/v1"
+CONFIDENT_MATCH_TYPES = ("EXACT",)
 
 
 class GbifError(RuntimeError):
+    pass
+
+
+def species_url(usage_key: object) -> str:
+    return f"https://www.gbif.org/species/{usage_key}" if usage_key not in (None, "") else ""
 
 
 @dataclass
@@ -33,7 +42,20 @@ class GbifMatch:
     raw: dict = field(repr=False, default_factory=dict)
 
     @property
+    def name(self) -> str:
+        return self.canonical_name
+
+    @property
+    def register_id(self) -> int | None:
+        return self.usage_key
+
+    @property
+    def is_accepted(self) -> bool:
+        return self.status == "ACCEPTED"
+
+    @property
     def taxon_concept_id(self) -> str:
+        return species_url(self.usage_key)
 
     @property
     def is_confident_match_type(self) -> bool:
@@ -66,17 +88,21 @@ class GbifMatch:
         )
 
 
+_CACHE_FILENAME = "gbif_match_cache.json"
 
 
 class GbifClient:
     def __init__(self, *, client: httpx.Client | None = None, cache_dir: Path | None = None):
         self._client = client or httpx.Client(timeout=TIMEOUT)
         self._owns_client = client is None
+        self._cache = MatchCache(cache_dir, _CACHE_FILENAME)
 
     def close(self) -> None:
+        self._cache.save()
         if self._owns_client:
             self._client.close()
 
+    def __enter__(self) -> GbifClient:  # noqa: PYI034
         return self
 
     def __exit__(self, *exc) -> None:
@@ -89,12 +115,25 @@ class GbifClient:
             if kingdom:
                 params["kingdom"] = kingdom
             api_usage.record("gbif_match")
+            response = register_http.get(
+                self._client,
+                f"{BASE_URL}/species/match",
+                params=params,
+                register="gbif",
+                error=GbifError,
+            )
+            self._cache.add({cache_key: response.json()})
         return GbifMatch.from_raw(self._cache[cache_key])
 
     def species_by_key(self, key: int) -> dict | None:
         cache_key = f"species:{key}"
         if cache_key not in self._cache:
             api_usage.record("gbif_species_by_key")
+            response = register_http.get(
+                self._client, f"{BASE_URL}/species/{key}", register="gbif", error=GbifError
+            )
+            self._cache.add({cache_key: response.json()})
+        return self._cache[cache_key]
 
 
 __all__ = ["CONFIDENT_MATCH_TYPES", "GbifClient", "GbifError", "GbifMatch"]

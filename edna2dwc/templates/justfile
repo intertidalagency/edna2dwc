@@ -1,0 +1,33 @@
+# Common operations for this conversion, discoverable without reading
+# the full CLI reference. Copied alongside answers.yaml by
+# `edna2dwc init`. Run `just --list` to see every recipe.
+#
+# A recipe takes its inputs as variable overrides written before the
+# recipe name: `just bundle_dir=some/other/dir replay`, never
+# `just replay some/other/dir`.
+
+bundle_dir := "."
+archive := "archive"
+old := ""
+new := ""
+# The shipped dwca.zip to compare a rebuild against, when this
+# reproduce/ is not beside it.
+against := ""
+
+build:
+    edna2dwc build
+
+replay:
+    edna2dwc replay {{bundle_dir}}
+
+check:
+    edna2dwc replay {{bundle_dir}} --check {{ if against == "" { "" } else { "--against " + against } }}
+
+compare:
+    edna2dwc replay --compare {{old}} {{new}}
+
+validate:
+    edna2dwc validate {{archive}} --strict --priority-terms --gbif --obis
+
+evaluate:
+    edna2dwc evaluate {{archive}}

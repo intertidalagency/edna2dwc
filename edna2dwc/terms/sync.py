@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
+from datetime import UTC, datetime
 import io
+import json
+from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import httpx
+import platformdirs
 
+from edna2dwc.common.result import CommandResult
+from edna2dwc.terms.formats import FORMAT_BY_TERM, VOCABULARY_BY_TERM
 
 SIMPLE_DWC_URL = "https://raw.githubusercontent.com/tdwg/dwc/master/dist/simple_dwc_vertical.csv"
 DWC_VERSIONS_URL = "https://raw.githubusercontent.com/tdwg/dwc/master/vocabulary/term_versions.csv"
@@ -95,7 +101,10 @@ _PAIR_SPECS: tuple[tuple[str, str, str, str | None], ...] = (
 )
 
 _EXPECTS_SPECS: tuple[tuple[str, str, str], ...] = (
+    ("decimalLatitude", "geodeticDatum", "warning"),
     ("decimalLatitude", "coordinateUncertaintyInMeters", "warning"),
+    ("footprintWKT", "footprintSRS", "warning"),
+    ("DNA_sequence", "target_gene", "warning"),
     ("pcr_primer_forward", "pcr_primer_name_forward", "warning"),
 )
 
@@ -125,6 +134,7 @@ def pairs_for(name: str) -> list[dict] | None:
     return matches or None
 
 
+PRIORITY_REQUIRED = frozenset(
     {
         "occurrenceID",
         "basisOfRecord",
@@ -140,6 +150,7 @@ def pairs_for(name: str) -> list[dict] | None:
         "annealingTemp",
     }
 )
+PRIORITY_STRONGLY_RECOMMENDED = frozenset(
     {
         "minimumDepthInMeters",
         "maximumDepthInMeters",
@@ -183,6 +194,7 @@ def pairs_for(name: str) -> list[dict] | None:
         "pcr_primer_loq",
     }
 )
+PRIORITY_RECOMMENDED = frozenset(
     {
         "associatedSequences",
         "identificationRemarks",
@@ -195,10 +207,15 @@ def pairs_for(name: str) -> list[dict] | None:
     }
 )
 
+ALL_PRIORITY_TERM_NAMES = PRIORITY_REQUIRED | PRIORITY_STRONGLY_RECOMMENDED | PRIORITY_RECOMMENDED
 
 
+def priority_tier_for(name: str) -> str | None:
+    if name in PRIORITY_REQUIRED:
         return "required"
+    if name in PRIORITY_STRONGLY_RECOMMENDED:
         return "strongly_recommended"
+    if name in PRIORITY_RECOMMENDED:
         return "recommended"
     return None
 
@@ -209,6 +226,7 @@ ALL_TIERED_NAMES = (
     | REQUIRED_IF_EVENT_CORE
     | REQUIRED_IF_EMOF
     | RECOMMENDED
+    | ALL_PRIORITY_TERM_NAMES
 )
 
 
@@ -241,15 +259,21 @@ def _class_from_organized_in(organized_in: str) -> str:
 def parse_dwc_and_dublin_core(simple_csv_text: str, versions_csv_text: str) -> list[TermSource]:
     names = [line.strip() for line in simple_csv_text.splitlines() if line.strip()]
 
+    newest_recommended_by_name: dict[str, dict] = {}
     reader = csv.DictReader(io.StringIO(versions_csv_text))
     for row in reader:
         if row.get("status") != "recommended":
             continue
+        newest_recommended_by_name.setdefault(row["term_localName"], row)
 
+    simple_dwc_names = set(names)
+    names.extend(sorted((ALL_TIERED_NAMES & set(newest_recommended_by_name)) - simple_dwc_names))
 
     sources = []
     for name in names:
+        row = newest_recommended_by_name.get(name)
         if row is None:
+            continue
         sources.append(
             TermSource(
                 name=name,
@@ -336,11 +360,15 @@ def build_term_table(sources: list[TermSource]) -> dict:
     terms: dict[str, dict] = {}
     for source in sources:
         if source.name in terms:
+            continue
         entry: dict = {
             "uri": source.uri,
             "class": source.term_class,
             "tier": tier_for(source.name),
         }
+        priority_tier = priority_tier_for(source.name)
+        if priority_tier is not None:
+            entry["priority_tier"] = priority_tier
         if source.name in DEFAULTS:
             entry["default"] = DEFAULTS[source.name]
         if source.name in FORMAT_BY_TERM:
@@ -377,6 +405,7 @@ def sync(cache_dir, *, offline: bool = False, client: httpx.Client | None = None
         write_cache(cache_dir, raw)
 
     terms = build_term_table(parse_raw(raw))
+    accessed = datetime.now(UTC).strftime("%Y-%m-%d")
     counts_by_class: dict[str, int] = {}
     for entry in terms.values():
         counts_by_class[entry["class"]] = counts_by_class.get(entry["class"], 0) + 1
@@ -389,3 +418,17 @@ def sync(cache_dir, *, offline: bool = False, client: httpx.Client | None = None
             "term_count_by_class": counts_by_class,
         },
     }
+
+
+def cache_dir() -> Path:
+    return Path(platformdirs.user_cache_dir("edna2dwc")) / "terms_sync"
+
+
+def step(*, offline: bool = False, output: Path) -> CommandResult:
+    table = sync(cache_dir(), offline=offline)
+    output.write_text(json.dumps(table, indent=2, sort_keys=True), encoding="utf-8")
+    return CommandResult(
+        command="terms sync",
+        outputs={"term_table": str(output)},
+        text=f"Wrote {table['_notes']['term_count']} terms to {output}",
+    )

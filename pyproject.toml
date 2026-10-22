@@ -1,9 +1,117 @@
+[build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[project]
+name = "edna2dwc"
+version = "0.1.0"
+description = "Convert eDNA/metabarcoding data into Darwin Core Archives for GBIF and OBIS"
+authors = [
+  { name = "Intertidal Agency" },
+  { name = "DrivenData", email = "info@drivendata.org" },
+  { name = "The Data Patch", email = "info@thedatapatch.com" },
+]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+requires-python = ">=3.11"
+keywords = ["eDNA", "metabarcoding", "Darwin Core", "GBIF", "OBIS", "biodiversity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "cyclopts>=4.25,<6",
+    "duckdb>=1.5,<3",
+    "h5py>=3.16,<4",
+    "httpx>=0.28,<1",
+    "keyring>=25.7,<26",
+    "markdown-it-py>=4.2,<5",
+    "openpyxl>=3.1.5,<4",
+    "pandas>=3.0,<4",
+    "platformdirs>=4.13,<5",
+    "pypdf>=6.20,<7",
+    "pyproj>=3.7,<4",
+    "pyyaml>=6.0,<7",
+    "timezonefinder>=9.0,<10",
+]
+
 [project.scripts]
+edna2dwc = "edna2dwc.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/intertidalagency/edna2dwc"
+Source = "https://github.com/intertidalagency/edna2dwc"
+Issues = "https://github.com/intertidalagency/edna2dwc/issues"
 
 [dependency-groups]
 dev = [
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest",
+    "ruff",
+    "rumdl",
+    "rust-just",
+    "ty",
+    "xmlschema",
+    "zizmor",
 ]
 
+[tool.uv]
+required-version = ">=0.9.17"
+exclude-newer = "7 days"
+
 [tool.hatch.build.targets.wheel]
+packages = ["edna2dwc"]
+exclude = ["edna2dwc/data/eml-xsd/"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["edna2dwc/data/eml-xsd/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not memory' --strict-markers"
+filterwarnings = ["error"]
+xfail_strict = true
+markers = ["memory: runs a 2M-row conversion; `just test-memory` runs it, `just test` skips it"]
+norecursedirs = ["*.egg", ".*", "_darcs", "CVS", "dist", "node_modules", "venv", "{arch}"]
+
+[tool.coverage.run]
+source = ["edna2dwc"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ty.src]
+include = ["edna2dwc", "tests", "maintenance"]
+
+[tool.ruff]
+line-length = 99
+include = ["pyproject.toml", "edna2dwc/**/*.py", "tests/**/*.py", "maintenance/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I", "PLC0415"]
+unfixable = ["F"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["edna2dwc"]
+force-sort-within-sections = true
+
+[tool.rumdl]
+disable = ["MD013", "MD033"]
+exclude = [
+    ".venv",
+    ".playwright-mcp",
+    "tests/fixtures",
+]

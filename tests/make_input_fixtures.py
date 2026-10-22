@@ -5,6 +5,11 @@ from pathlib import Path
 import tempfile
 import zipfile
 
+import h5py
+import numpy as np
+from openpyxl import Workbook
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures" / "inputs"
 
 
 def _write_xlsx(path: Path) -> None:
@@ -46,9 +51,11 @@ def _write_multisheet_xlsx(path: Path) -> None:
 
 def _write_biom_json_v1(path: Path) -> None:
     payload = {
+        "id": "ingest-fixture",
         "format": "Biological Observation Matrix 1.0.0",
         "format_url": "http://biom-format.org",
         "type": "OTU table",
+        "generated_by": "make_input_fixtures.py",
         "date": "2026-08-12T00:00:00",
         "matrix_type": "sparse",
         "matrix_element_type": "int",
@@ -65,8 +72,10 @@ def _write_biom_json_v1(path: Path) -> None:
 
 def _write_biom_hdf5(path: Path) -> None:
     with h5py.File(path, "w") as f:
+        f.attrs["id"] = "ingest-fixture-hdf5"
         f.attrs["format-url"] = "http://biom-format.org"
         f.attrs["format-version"] = (2, 1)
+        f.attrs["generated-by"] = "make_input_fixtures.py"
         f.attrs["creation-date"] = "2026-08-12T00:00:00"
         f.attrs["type"] = "OTU table"
         f.attrs["shape"] = [2, 2]

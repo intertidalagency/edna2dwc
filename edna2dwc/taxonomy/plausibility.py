@@ -57,6 +57,17 @@ def kingdoms_implausible(source_kingdom: str, candidate_kingdom: str) -> bool:
     return source_group != candidate_group
 
 
+def _domain(kingdom: str) -> str | None:
+    group = kingdom_group(kingdom)
+    return "eukaryote" if group in _EUKARYOTE_GROUPS else group
+
+
+def domains_implausible(source_kingdom: str, candidate_kingdom: str) -> bool:
+    source_domain = _domain(source_kingdom)
+    candidate_domain = _domain(candidate_kingdom)
+    return None not in (source_domain, candidate_domain) and source_domain != candidate_domain
+
+
 def has_organelle_marker(genus: str, family: str, order: str, class_: str) -> bool:
     fields = (genus, family, order, class_)
     return any((f or "").strip().casefold() in ORGANELLE_MARKERS for f in fields)

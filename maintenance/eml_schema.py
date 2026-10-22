@@ -6,6 +6,7 @@ import re
 import httpx
 
 ENTRY_POINT = "https://rs.gbif.org/schema/eml-gbif-profile/1.2/eml.xsd"
+OUTPUT_DIR = Path(__file__).resolve().parent.parent / "edna2dwc" / "data" / "eml-xsd"
 
 _ABSOLUTE_URL_FILENAMES = {
     "http://www.w3.org/2001/xml.xsd": "w3-xml.xsd",
@@ -18,6 +19,8 @@ def _local_name(location: str) -> str:
     if location in _ABSOLUTE_URL_FILENAMES:
         return _ABSOLUTE_URL_FILENAMES[location]
     if location.startswith("http"):
+        return location.rsplit("/", 1)[-1]
+    return location
 
 
 def find_schema_locations(text: str) -> list[str]:

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
+import os
 
 import httpx
 import pytest
 
+from edna2dwc.taxonomy import api_usage
+from edna2dwc.taxonomy.gbif import GbifClient, GbifMatch
 
 
 @pytest.fixture(autouse=True)
@@ -68,6 +72,7 @@ def test_cache_avoids_re_querying(tmp_path):
 
     with GbifClient(client=_client(handler), cache_dir=tmp_path) as gbif2:
         gbif2.match("Aaptos", kingdom="Animalia")
+    assert len(calls) == 1
 
 
 def test_higher_rank_and_fuzzy_match_types_from_raw():
@@ -120,8 +125,13 @@ def test_from_raw_survives_explicit_json_nulls_for_unresolved_ranks():
 
 def test_repeated_match_calls_do_not_rewrite_the_cache_file_every_time(tmp_path, monkeypatch):
     write_calls = []
+    original_replace = os.replace
 
+    def counting_replace(source, destination):
+        write_calls.append(destination)
+        return original_replace(source, destination)
 
+    monkeypatch.setattr(os, "replace", counting_replace)
 
     def handler(request):
         return httpx.Response(200, json=AAPTOS_MATCH)
@@ -129,3 +139,18 @@ def test_repeated_match_calls_do_not_rewrite_the_cache_file_every_time(tmp_path,
     with GbifClient(client=_client(handler), cache_dir=tmp_path) as gbif:
         for i in range(10):
             gbif.match(f"Genus{i} species{i}", kingdom="Animalia")
+        assert len(write_calls) == 0
+    assert len(write_calls) == 1
+
+
+def test_a_cache_file_cut_off_partway_is_read_as_empty_and_written_whole(tmp_path):
+    cache_path = tmp_path / "gbif_match_cache.json"
+    cache_path.write_text('{"Aaptos\\u001fAnimalia": {"usageKey": 22', encoding="utf-8")
+
+    def handler(request):
+        return httpx.Response(200, json=AAPTOS_MATCH)
+
+    with GbifClient(client=_client(handler), cache_dir=tmp_path) as gbif:
+        assert gbif.match("Aaptos", kingdom="Animalia").usage_key == 2243941
+
+    assert set(json.loads(cache_path.read_text(encoding="utf-8"))) == {"Aaptos\x1fAnimalia"}

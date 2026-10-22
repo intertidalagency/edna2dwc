@@ -2,8 +2,16 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   install:
@@ -12,32 +20,136 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Oldest and newest supported Python on Linux, since wheel
+        # availability is what varies by version rather than by OS. macOS and
+        # Windows each get one job, to confirm the wheel installs and runs.
         include:
           - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.14"
           - os: macos-latest
             python-version: "3.13"
           - os: windows-latest
             python-version: "3.13"
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
           python-version: ${{ matrix.python-version }}
       - name: Build the wheel
         shell: bash
         run: uv build
+      - name: Install the built wheel, with the newest dependencies a user would get
         shell: bash
+        run: uv tool install --exclude-newer "0 days" ./dist/*.whl
+      - name: edna2dwc --version
         shell: bash
+        run: edna2dwc --version
+      - name: edna2dwc doctor (the installed wheel should report a complete install)
         shell: bash
+        run: edna2dwc doctor
+      - name: Build a golden archive with the installed wheel
+        shell: bash
+        run: |
+          mkdir work
+          cp tests/golden/two_markers/{answers.yaml,occurrence_long.tsv,resolved_taxonomy.tsv} work/
+          (cd work && edna2dwc build --automatic)
+          edna2dwc replay --compare tests/golden/two_markers/dwca.zip work/archive/dwca.zip -o work/comparison.md
 
   test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }}${{ matrix.resolution && format(', {0}', matrix.resolution) || '' }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        # Every supported Python on Linux; the newest on macOS and Windows,
+        # where what varies is the filesystem and shell rather than the
+        # interpreter.
+        include:
+          - os: ubuntu-latest
+            python-version: "3.11"
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          - os: ubuntu-latest
+            python-version: "3.14"
+          - os: macos-latest
+            python-version: "3.13"
+          - os: windows-latest
+            python-version: "3.13"
+          # The oldest and newest versions pyproject.toml allows, as an
+          # installed edna2dwc can get either.
+          - os: ubuntu-latest
+            python-version: "3.11"
+            resolution: lowest-direct
+          - os: ubuntu-latest
+            python-version: "3.14"
+            resolution: highest
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
           python-version: ${{ matrix.python-version }}
+      - run: uv sync --locked --group dev
+      - if: matrix.resolution
+        run: uv pip install --resolution "$RESOLUTION" --upgrade --exclude-newer "0 days" -e .
+        env:
+          RESOLUTION: ${{ matrix.resolution }}
+      - run: uv run just test
+        env:
+          UV_NO_SYNC: ${{ matrix.resolution && 'true' || 'false' }}
 
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
+          python-version: "3.13"
+      - run: uv sync --locked --group dev
+      - run: uv run just lint
+
+  # A conversion must stay within its memory limit however many rows it has.
+  # The phyloseq snippet in the skill runs in R. Its test skips itself when
+  # Rscript or phyloseq is missing, so this job is the one place it runs
+  # for real. The Bioconductor image is much faster than building
+  # phyloseq from source on a bare runner.
   test-with-r:
     name: test with R + phyloseq
     runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker@sha256:5053f59de1c1a79b5a05d820ba722bae62ded0c1042e547189aa0226f111ea7e # RELEASE_3_20
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.12.23"
       - run: Rscript -e 'BiocManager::install("phyloseq", update = FALSE, ask = FALSE)'
+      - run: uv sync --locked --group dev
+      - run: uv run pytest tests/test_skill_snippets.py -k phyloseq -v
+
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: zizmorcore/zizmor-action@85b2b9fb8e3325e7a23d7d0a9d7ba5ae0f999e3e # v0.7.1
+        with:
+          persona: pedantic
+          advanced-security: false
+          annotations: true

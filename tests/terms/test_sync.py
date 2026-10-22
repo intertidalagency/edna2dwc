@@ -1,5 +1,9 @@
+import json
+
 import pytest
 
+from edna2dwc.terms import sync
+from edna2dwc.terms.term_table import load_term_table
 
 SIMPLE_DWC_CSV = "occurrenceID\nscientificName\nbasisOfRecord\nkingdom\nmodified\ntype\n"
 
@@ -52,6 +56,7 @@ def test_parse_dwc_and_dublin_core_bare_namespace_organized_in_is_record_level()
     by_name = {s.name: s for s in sources}
     assert by_name["modified"].term_class == "record-level"
     assert by_name["type"].term_class == "record-level"
+    assert by_name["basisOfRecord"].term_class == "record-level"
 
 
 def test_parse_dwc_and_dublin_core_falls_back_for_names_missing_from_simple_list():
@@ -80,16 +85,43 @@ def test_parse_emof_extension_keeps_only_obis_namespaced_properties():
     assert sources[0].term_class == "MeasurementOrFact"
 
 
+@pytest.mark.parametrize(
+    ("name", "tier"),
+    [
+        ("occurrenceID", "required"),
+        ("kingdom", "required_if_occurrence_core"),
+        ("eventID", "required_if_event_core"),
+        ("measurementType", "required_if_emof"),
+        ("measurementUnit", "recommended"),
+        ("someRandomOptionalTerm", "optional"),
+    ],
+)
+def test_tier_for_returns_each_tier(name, tier):
+    assert sync.tier_for(name) == tier
 
 
+@pytest.mark.parametrize(
+    ("name", "tier"),
+    [
+        ("annealingTemp", "required"),
+        ("eventID", "strongly_recommended"),
+        ("phylum", "recommended"),
+        ("someRandomOptionalTerm", None),
+    ],
+)
+def test_priority_tier_for_returns_each_tier(name, tier):
+    assert sync.priority_tier_for(name) == tier
 
 
+def test_build_term_table_attaches_priority_tier_only_when_applicable(monkeypatch):
     monkeypatch.setattr(sync, "ALL_TIERED_NAMES", frozenset({"occurrenceID", "samp_name"}))
     sources = [
         sync.TermSource(name="occurrenceID", uri="uri-a", term_class="Occurrence"),
         sync.TermSource(name="samp_name", uri="uri-b", term_class="DNADerivedData"),
     ]
     table = sync.build_term_table(sources)
+    assert table["occurrenceID"]["priority_tier"] == "required"
+    assert "priority_tier" not in table["samp_name"]
 
 
 def test_build_term_table_applies_defaults(monkeypatch):
@@ -124,6 +156,7 @@ def test_build_term_table_attaches_expects_field(monkeypatch):
         sync.TermSource(name="recordedBy", uri="uri-c", term_class="Occurrence"),
     ]
     table = sync.build_term_table(sources)
+    assert {"then": "geodeticDatum", "severity": "warning"} in table["decimalLatitude"]["expects"]
     assert "expects" not in table["recordedBy"]
 
 
@@ -137,3 +170,26 @@ def test_build_term_table_attaches_pairs_field(monkeypatch):
     table = sync.build_term_table(sources)
     assert table["sampleSizeValue"]["pairs"] == [{"with": "sampleSizeUnit", "severity": "error"}]
     assert "pairs" not in table["recordedBy"]
+
+
+def test_step_writes_the_table_and_reports_the_count(tmp_path, monkeypatch):
+    table = {
+        "occurrenceID": {"uri": "http://rs.tdwg.org/dwc/terms/occurrenceID"},
+        "_notes": {"term_count": 1},
+    }
+    monkeypatch.setattr(sync, "sync", lambda *a, **kw: table)
+    output = tmp_path / "dwc_terms.json"
+
+    result = sync.step(output=output)
+
+    assert json.loads(output.read_text(encoding="utf-8")) == table
+    assert "1 terms" in result.text
+    assert result.outputs["term_table"] == str(output)
+    assert result.exit_code == 0
+
+
+def test_the_shipped_term_table_carries_the_rules_the_specs_declare():
+    shipped = load_term_table()
+    for name, entry in shipped.items():
+        assert entry.get("expects") == sync.expects_for(name), name
+        assert entry.get("pairs") == sync.pairs_for(name), name

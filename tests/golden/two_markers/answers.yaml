@@ -1,0 +1,53 @@
+dataset_id: puget-sound-two-markers
+created: '2026-01-01T00:00:00Z'
+out_dir: archive
+metadata:
+  abstract:
+    value: Synthetic two-marker eDNA survey used as a golden archive.
+    provenance: 'abstract'
+    confirmed: 'A Researcher'
+  contacts:
+    value:
+    - surname: A Researcher
+    provenance: 'contacts'
+    confirmed: 'A Researcher'
+  creators:
+    value:
+    - surname: A Researcher
+    provenance: 'creators'
+    confirmed: 'A Researcher'
+  license:
+    value: CC0-1.0
+    provenance: 'license'
+    confirmed: 'A Researcher'
+  pub_date:
+    value: '2026-01-01'
+    provenance: 'pub_date'
+    confirmed: 'A Researcher'
+  title:
+    value: Puget Sound eDNA survey, two markers
+    provenance: 'title'
+    confirmed: 'A Researcher'
+markers:
+  Leray-COI:
+    target: eukaryotes
+    provenance: 'methods (Leray mlCOIintF/jgHCO2198 primers target metazoan COI)'
+    confirmed: 'A Researcher'
+  MiFish-U:
+    target: vertebrates
+    provenance: 'methods (MiFish-U primers target the 12S rRNA of fishes)'
+    confirmed: 'A Researcher'
+controls:
+  NC05:
+    value: sample
+    provenance: 'NC is the North Cove field site'
+    confirmed: 'A Researcher'
+filters:
+  exclude_human: {value: true, provenance: 'a test fixture', confirmed: 'A Researcher'}
+constants:
+  samplingProtocol:
+    value: 1 L surface water filtered through 0.45 um mixed cellulose ester
+    provenance: 'field protocol'
+    confirmed: 'A Researcher'
+taxonomy:
+  require_confident: false
