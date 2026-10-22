@@ -1,0 +1,6 @@
+
+
+# .claude/settings.json (project-shared settings) is fine; settings.local.json
+# is not.
+.claude/settings.local.json
+

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  install:
+    name: install (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+            python-version: "3.13"
+          - os: windows-latest
+            python-version: "3.13"
+    steps:
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build the wheel
+        shell: bash
+        run: uv build
+        shell: bash
+        shell: bash
+        shell: bash
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+    steps:
+        with:
+          python-version: ${{ matrix.python-version }}
+
+  test-with-r:
+    name: test with R + phyloseq
+    runs-on: ubuntu-latest
+    steps:
+      - run: Rscript -e 'BiocManager::install("phyloseq", update = FALSE, ask = FALSE)'

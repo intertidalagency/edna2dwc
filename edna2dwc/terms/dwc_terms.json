@@ -1,0 +1,1910 @@
+{
+  "DNA_sequence": {
+    "class": "DNADerivedData",
+    "expects": [
+      {
+        "then": "target_gene"
+      }
+    ],
+    "format": "dna_sequence",
+    "tier": "recommended",
+    "uri": "http://rs.gbif.org/terms/dna_sequence"
+  },
+  "_16s_recover": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000065"
+  },
+  "_16s_recover_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000066"
+  },
+  "_notes": {
+    "accessed": "2026-08-19",
+    "sources": [
+      "https://raw.githubusercontent.com/tdwg/dwc/master/dist/simple_dwc_vertical.csv",
+      "https://raw.githubusercontent.com/tdwg/dwc/master/vocabulary/term_versions.csv",
+      "https://rs.gbif.org/extension/gbif/1.0/dna_derived_data_2022-02-23.xml",
+      "https://rs.gbif.org/extension/obis/extended_measurement_or_fact.xml"
+    ],
+    "term_count": 331,
+    "term_count_by_class": {
+      "DNADerivedData": 119,
+      "Event": 22,
+      "GeologicalContext": 18,
+      "Identification": 13,
+      "Location": 46,
+      "MaterialEntity": 16,
+      "MaterialSample": 1,
+      "MeasurementOrFact": 6,
+      "Occurrence": 23,
+      "Organism": 7,
+      "Taxon": 40,
+      "record-level": 20
+    }
+  },
+  "acceptedNameUsage": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/acceptedNameUsage"
+  },
+  "acceptedNameUsageID": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/acceptedNameUsageID"
+  },
+  "accessRights": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/terms/accessRights"
+  },
+  "adapters": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000048"
+  },
+  "ampliconSize": {
+    "class": "DNADerivedData",
+    "format": "nonneg_number",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/ampliconSize"
+  },
+  "amplificationReactionVolume": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/amplificationReactionVolume"
+  },
+  "amplificationReactionVolumeUnit": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/amplificationReactionVolumeUnit"
+  },
+  "annealingTemp": {
+    "class": "DNADerivedData",
+    "format": "number_with_unit",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "annealingTempUnit"
+      }
+    ],
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/annealingTemp"
+  },
+  "annealingTempUnit": {
+    "class": "DNADerivedData",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "annealingTemp"
+      }
+    ],
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/annealingTempUnit"
+  },
+  "annot": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000059"
+  },
+  "assembly_name": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000057"
+  },
+  "assembly_qual": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000056"
+  },
+  "assembly_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000058"
+  },
+  "associatedMedia": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedMedia"
+  },
+  "associatedOccurrences": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedOccurrences"
+  },
+  "associatedOrganisms": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedOrganisms"
+  },
+  "associatedReferences": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedReferences"
+  },
+  "associatedSequences": {
+    "class": "MaterialEntity",
+    "format": "pipe_list",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedSequences"
+  },
+  "associatedTaxa": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/associatedTaxa"
+  },
+  "automaticBaselineValue": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/automaticBaselineValue"
+  },
+  "automaticThresholdQuantificationCycle": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/automaticThresholdQuantificationCycle"
+  },
+  "baselineValue": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/baselineValue"
+  },
+  "basisOfRecord": {
+    "class": "record-level",
+    "default": "MaterialSample",
+    "format": "controlled",
+    "tier": "required",
+    "uri": "http://rs.tdwg.org/dwc/terms/basisOfRecord",
+    "vocabulary": [
+      "Event",
+      "FossilSpecimen",
+      "HumanObservation",
+      "LivingSpecimen",
+      "MachineObservation",
+      "MaterialCitation",
+      "MaterialEntity",
+      "MaterialSample",
+      "Occurrence",
+      "PreservedSpecimen",
+      "Taxon"
+    ]
+  },
+  "bed": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/bed"
+  },
+  "behavior": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/behavior"
+  },
+  "bibliographicCitation": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/terms/bibliographicCitation"
+  },
+  "bin_param": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000077"
+  },
+  "bin_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000078"
+  },
+  "biotic_relationship": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000028"
+  },
+  "caste": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/caste"
+  },
+  "catalogNumber": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/catalogNumber"
+  },
+  "causeOfDeath": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/causeOfDeath"
+  },
+  "chimera_check": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000052"
+  },
+  "class": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/class"
+  },
+  "collectionCode": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/collectionCode"
+  },
+  "collectionID": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/collectionID"
+  },
+  "compl_appr": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000071"
+  },
+  "compl_score": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000069"
+  },
+  "compl_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000070"
+  },
+  "concentration": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://data.ggbn.org/schemas/ggbn/terms/concentration"
+  },
+  "concentrationUnit": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://data.ggbn.org/schemas/ggbn/terms/concentrationUnit"
+  },
+  "contam_score": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000072"
+  },
+  "contam_screen_input": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000005"
+  },
+  "contam_screen_param": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000073"
+  },
+  "contaminationAssessment": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/contaminationAssessment"
+  },
+  "continent": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/continent"
+  },
+  "coordinatePrecision": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/coordinatePrecision"
+  },
+  "coordinateUncertaintyInMeters": {
+    "class": "Location",
+    "format": "nonneg_number",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/coordinateUncertaintyInMeters"
+  },
+  "country": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/country"
+  },
+  "countryCode": {
+    "class": "Location",
+    "format": "iso3166_alpha2",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/countryCode"
+  },
+  "county": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/county"
+  },
+  "cultivarEpithet": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/cultivarEpithet"
+  },
+  "dataGeneralizations": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/dataGeneralizations"
+  },
+  "datasetID": {
+    "class": "record-level",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/datasetID"
+  },
+  "datasetName": {
+    "class": "record-level",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/datasetName"
+  },
+  "dateIdentified": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/dateIdentified"
+  },
+  "day": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/day"
+  },
+  "decimalLatitude": {
+    "class": "Location",
+    "expects": [
+      {
+        "then": "geodeticDatum"
+      },
+      {
+        "severity": "warning",
+        "then": "coordinateUncertaintyInMeters"
+      }
+    ],
+    "format": "decimal_degrees",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "decimalLongitude"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/decimalLatitude"
+  },
+  "decimalLongitude": {
+    "class": "Location",
+    "format": "decimal_degrees",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "decimalLatitude"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/decimalLongitude"
+  },
+  "decontam_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000074"
+  },
+  "degreeOfEstablishment": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/degreeOfEstablishment"
+  },
+  "detec_type": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000084"
+  },
+  "digitalSpecimenID": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/digitalSpecimenID"
+  },
+  "discipline": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/discipline"
+  },
+  "disposition": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/disposition"
+  },
+  "dynamicProperties": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/dynamicProperties"
+  },
+  "earliestAgeOrLowestStage": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/earliestAgeOrLowestStage"
+  },
+  "earliestEonOrLowestEonothem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/earliestEonOrLowestEonothem"
+  },
+  "earliestEpochOrLowestSeries": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/earliestEpochOrLowestSeries"
+  },
+  "earliestEraOrLowestErathem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/earliestEraOrLowestErathem"
+  },
+  "earliestPeriodOrLowestSystem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/earliestPeriodOrLowestSystem"
+  },
+  "encoded_traits": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000034"
+  },
+  "endDayOfYear": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/endDayOfYear"
+  },
+  "env_broad_scale": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000012"
+  },
+  "env_local_scale": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000013"
+  },
+  "env_medium": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000014"
+  },
+  "establishmentMeans": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/establishmentMeans"
+  },
+  "estimatedNumberOfCopies": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/estimatedNumberOfCopies"
+  },
+  "estimated_size": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000024"
+  },
+  "eventCategory": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventCategory"
+  },
+  "eventDate": {
+    "class": "Event",
+    "format": "iso8601_date",
+    "pairs": [
+      {
+        "scope": "occurrence_core_only",
+        "severity": "warning",
+        "with": "eventID"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventDate"
+  },
+  "eventID": {
+    "class": "Event",
+    "pairs": [
+      {
+        "scope": "occurrence_core_only",
+        "severity": "warning",
+        "with": "eventDate"
+      }
+    ],
+    "tier": "required_if_event_core",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventID"
+  },
+  "eventRemarks": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventRemarks"
+  },
+  "eventTime": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventTime"
+  },
+  "eventType": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/eventType"
+  },
+  "experimentalVariance": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/experimentalVariance"
+  },
+  "experimental_factor": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000008"
+  },
+  "extrachrom_elements": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000023"
+  },
+  "family": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/family"
+  },
+  "feat_pred": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000061"
+  },
+  "feedbackURL": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/feedbackURL"
+  },
+  "fieldNotes": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/fieldNotes"
+  },
+  "fieldNumber": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/fieldNumber"
+  },
+  "footprintSRS": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/footprintSRS"
+  },
+  "footprintSpatialFit": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/footprintSpatialFit"
+  },
+  "footprintWKT": {
+    "class": "Location",
+    "format": "wkt",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/footprintWKT"
+  },
+  "formation": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/formation"
+  },
+  "genericName": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/genericName"
+  },
+  "genus": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/genus"
+  },
+  "geodeticDatum": {
+    "class": "Location",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/geodeticDatum"
+  },
+  "geologicalContextID": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/geologicalContextID"
+  },
+  "georeferenceProtocol": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferenceProtocol"
+  },
+  "georeferenceRemarks": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferenceRemarks"
+  },
+  "georeferenceSources": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferenceSources"
+  },
+  "georeferenceVerificationStatus": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferenceVerificationStatus"
+  },
+  "georeferencedBy": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferencedBy"
+  },
+  "georeferencedDate": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/georeferencedDate"
+  },
+  "group": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/group"
+  },
+  "habitat": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/habitat"
+  },
+  "higherClassification": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/higherClassification"
+  },
+  "higherGeography": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/higherGeography"
+  },
+  "higherGeographyID": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/higherGeographyID"
+  },
+  "highestBiostratigraphicZone": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/highestBiostratigraphicZone"
+  },
+  "host_disease_stat": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000031"
+  },
+  "host_pred_appr": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000088"
+  },
+  "host_pred_est_acc": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000089"
+  },
+  "host_spec_range": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000030"
+  },
+  "identificationID": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationID"
+  },
+  "identificationQualifier": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationQualifier"
+  },
+  "identificationReferences": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationReferences"
+  },
+  "identificationRemarks": {
+    "class": "Identification",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationRemarks"
+  },
+  "identificationType": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationType"
+  },
+  "identificationVerificationStatus": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identificationVerificationStatus"
+  },
+  "identifiedBy": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identifiedBy"
+  },
+  "identifiedByID": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/identifiedByID"
+  },
+  "individualCount": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/individualCount"
+  },
+  "informationWithheld": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/informationWithheld"
+  },
+  "infragenericEpithet": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/infragenericEpithet"
+  },
+  "infraspecificEpithet": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/infraspecificEpithet"
+  },
+  "institutionCode": {
+    "class": "record-level",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/institutionCode"
+  },
+  "institutionID": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/institutionID"
+  },
+  "isAcceptedIdentification": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/isAcceptedIdentification"
+  },
+  "island": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/island"
+  },
+  "islandGroup": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/islandGroup"
+  },
+  "isol_growth_condt": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000003"
+  },
+  "kingdom": {
+    "class": "Taxon",
+    "tier": "required_if_occurrence_core",
+    "uri": "http://rs.tdwg.org/dwc/terms/kingdom"
+  },
+  "language": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/elements/1.1/language"
+  },
+  "latestAgeOrHighestStage": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/latestAgeOrHighestStage"
+  },
+  "latestEonOrHighestEonothem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/latestEonOrHighestEonothem"
+  },
+  "latestEpochOrHighestSeries": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/latestEpochOrHighestSeries"
+  },
+  "latestEraOrHighestErathem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/latestEraOrHighestErathem"
+  },
+  "latestPeriodOrHighestSystem": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/latestPeriodOrHighestSystem"
+  },
+  "lib_layout": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000041"
+  },
+  "lib_reads_seqd": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000040"
+  },
+  "lib_screen": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000043"
+  },
+  "lib_size": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000039"
+  },
+  "lib_vector": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000042"
+  },
+  "license": {
+    "class": "record-level",
+    "format": "uri",
+    "tier": "recommended",
+    "uri": "http://purl.org/dc/terms/license"
+  },
+  "lifeStage": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/lifeStage"
+  },
+  "lithostratigraphicTerms": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/lithostratigraphicTerms"
+  },
+  "locality": {
+    "class": "Location",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/locality"
+  },
+  "locationAccordingTo": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/locationAccordingTo"
+  },
+  "locationID": {
+    "class": "Location",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/locationID"
+  },
+  "locationRemarks": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/locationRemarks"
+  },
+  "lowestBiostratigraphicZone": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/lowestBiostratigraphicZone"
+  },
+  "mag_cov_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000080"
+  },
+  "materialEntityCategory": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/materialEntityCategory"
+  },
+  "materialEntityID": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/materialEntityID"
+  },
+  "materialEntityRemarks": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/materialEntityRemarks"
+  },
+  "materialEntityType": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/materialEntityType"
+  },
+  "materialSampleID": {
+    "class": "MaterialSample",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/materialSampleID"
+  },
+  "maximumDepthInMeters": {
+    "class": "Location",
+    "format": "nonneg_number",
+    "pairs": [
+      {
+        "severity": "warning",
+        "with": "minimumDepthInMeters"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/maximumDepthInMeters"
+  },
+  "maximumDistanceAboveSurfaceInMeters": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/maximumDistanceAboveSurfaceInMeters"
+  },
+  "maximumElevationInMeters": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/maximumElevationInMeters"
+  },
+  "measurementType": {
+    "class": "MeasurementOrFact",
+    "tier": "required_if_emof",
+    "uri": "http://rs.tdwg.org/dwc/terms/measurementType"
+  },
+  "measurementTypeID": {
+    "class": "MeasurementOrFact",
+    "tier": "optional",
+    "uri": "http://rs.iobis.org/obis/terms/measurementTypeID"
+  },
+  "measurementUnit": {
+    "class": "MeasurementOrFact",
+    "pairs": [
+      {
+        "severity": "warning",
+        "with": "measurementValue"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/measurementUnit"
+  },
+  "measurementUnitID": {
+    "class": "MeasurementOrFact",
+    "tier": "optional",
+    "uri": "http://rs.iobis.org/obis/terms/measurementUnitID"
+  },
+  "measurementValue": {
+    "class": "MeasurementOrFact",
+    "pairs": [
+      {
+        "severity": "warning",
+        "with": "measurementUnit"
+      }
+    ],
+    "tier": "required_if_emof",
+    "uri": "http://rs.tdwg.org/dwc/terms/measurementValue"
+  },
+  "measurementValueID": {
+    "class": "MeasurementOrFact",
+    "tier": "optional",
+    "uri": "http://rs.iobis.org/obis/terms/measurementValueID"
+  },
+  "member": {
+    "class": "GeologicalContext",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/member"
+  },
+  "methodDeterminationConcentrationAndRatios": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://data.ggbn.org/schemas/ggbn/terms/methodDeterminationConcentrationAndRatios"
+  },
+  "mid": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000047"
+  },
+  "minimumDepthInMeters": {
+    "class": "Location",
+    "format": "nonneg_number",
+    "pairs": [
+      {
+        "severity": "warning",
+        "with": "maximumDepthInMeters"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/minimumDepthInMeters"
+  },
+  "minimumDistanceAboveSurfaceInMeters": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/minimumDistanceAboveSurfaceInMeters"
+  },
+  "minimumElevationInMeters": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/minimumElevationInMeters"
+  },
+  "modified": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/terms/modified"
+  },
+  "month": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/month"
+  },
+  "municipality": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/municipality"
+  },
+  "nameAccordingTo": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/nameAccordingTo"
+  },
+  "nameAccordingToID": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/nameAccordingToID"
+  },
+  "namePublishedIn": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/namePublishedIn"
+  },
+  "namePublishedInID": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/namePublishedInID"
+  },
+  "namePublishedInYear": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/namePublishedInYear"
+  },
+  "nomenclaturalCode": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/nomenclaturalCode"
+  },
+  "nomenclaturalStatus": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/nomenclaturalStatus"
+  },
+  "nucl_acid_amp": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000038"
+  },
+  "nucl_acid_ext": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000037"
+  },
+  "num_replicons": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000022"
+  },
+  "number_contig": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000060"
+  },
+  "objectQuantity": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/objectQuantity"
+  },
+  "objectQuantityType": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/objectQuantityType"
+  },
+  "occurrenceID": {
+    "class": "Occurrence",
+    "tier": "required",
+    "uri": "http://rs.tdwg.org/dwc/terms/occurrenceID"
+  },
+  "occurrenceRemarks": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/occurrenceRemarks"
+  },
+  "occurrenceStatus": {
+    "class": "Occurrence",
+    "default": "present",
+    "format": "controlled",
+    "tier": "required_if_occurrence_core",
+    "uri": "http://rs.tdwg.org/dwc/terms/occurrenceStatus",
+    "vocabulary": [
+      "absent",
+      "present"
+    ]
+  },
+  "order": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/order"
+  },
+  "organismID": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismID"
+  },
+  "organismName": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismName"
+  },
+  "organismQuantity": {
+    "class": "Occurrence",
+    "format": "nonneg_number",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "organismQuantityType"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismQuantity"
+  },
+  "organismQuantityType": {
+    "class": "Occurrence",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "organismQuantity"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismQuantityType"
+  },
+  "organismRemarks": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismRemarks"
+  },
+  "organismScope": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/organismScope"
+  },
+  "originalNameUsage": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/originalNameUsage"
+  },
+  "originalNameUsageID": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/originalNameUsageID"
+  },
+  "otherCatalogNumbers": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/otherCatalogNumbers"
+  },
+  "otu_class_appr": {
+    "class": "DNADerivedData",
+    "format": "controlled",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000085"
+  },
+  "otu_db": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000087"
+  },
+  "otu_seq_comp_appr": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000086"
+  },
+  "ownerInstitutionCode": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/ownerInstitutionCode"
+  },
+  "parentEventID": {
+    "class": "Event",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/parentEventID"
+  },
+  "parentNameUsage": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/parentNameUsage"
+  },
+  "parentNameUsageID": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/parentNameUsageID"
+  },
+  "partitionVolume": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/partitionVolume"
+  },
+  "partitionVolumeUnit": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/partitionVolumeUnit"
+  },
+  "pathogenicity": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000027"
+  },
+  "pathway": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/pathway"
+  },
+  "pcr_analysis_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/pcr_analysis_software"
+  },
+  "pcr_cond": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000049"
+  },
+  "pcr_primer_forward": {
+    "class": "DNADerivedData",
+    "expects": [
+      {
+        "severity": "warning",
+        "then": "pcr_primer_name_forward"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.gbif.org/terms/pcr_primer_forward"
+  },
+  "pcr_primer_lod": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/pcr_primer_lod"
+  },
+  "pcr_primer_loq": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/pcr_primer_loq"
+  },
+  "pcr_primer_name_forward": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "http://rs.gbif.org/terms/pcr_primer_name_forward"
+  },
+  "pcr_primer_name_reverse": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "http://rs.gbif.org/terms/pcr_primer_name_reverse"
+  },
+  "pcr_primer_reference": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/pcr_primer_reference"
+  },
+  "pcr_primer_reverse": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "http://rs.gbif.org/terms/pcr_primer_reverse"
+  },
+  "pcr_primers": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000046"
+  },
+  "phylum": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/phylum"
+  },
+  "ploidy": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000021"
+  },
+  "pointRadiusSpatialFit": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/pointRadiusSpatialFit"
+  },
+  "pred_genome_struc": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000083"
+  },
+  "pred_genome_type": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000082"
+  },
+  "preferredSpatialRepresentation": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/preferredSpatialRepresentation"
+  },
+  "preparations": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/preparations"
+  },
+  "previousIdentifications": {
+    "class": "Organism",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/previousIdentifications"
+  },
+  "probeQuencher": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/probeQuencher"
+  },
+  "probeReporter": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/probeReporter"
+  },
+  "project_name": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000092"
+  },
+  "propagation": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000033"
+  },
+  "quantificationCycle": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/quantificationCycle"
+  },
+  "ratioOfAbsorbance260_230": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://data.ggbn.org/schemas/ggbn/terms/ratioOfAbsorbance260_230"
+  },
+  "ratioOfAbsorbance260_280": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://data.ggbn.org/schemas/ggbn/terms/ratioOfAbsorbance260_280"
+  },
+  "reassembly_bin": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000079"
+  },
+  "recordNumber": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/recordNumber"
+  },
+  "recordedBy": {
+    "class": "Occurrence",
+    "format": "pipe_list",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/recordedBy"
+  },
+  "recordedByID": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/recordedByID"
+  },
+  "ref_biomaterial": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000025"
+  },
+  "ref_db": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000062"
+  },
+  "references": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/terms/references"
+  },
+  "rel_to_oxygen": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000015"
+  },
+  "reproductiveCondition": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/reproductiveCondition"
+  },
+  "rightsHolder": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/terms/rightsHolder"
+  },
+  "samp_collec_device": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000002"
+  },
+  "samp_collec_method": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0001225"
+  },
+  "samp_mat_process": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000016"
+  },
+  "samp_name": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0001107"
+  },
+  "samp_size": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000001"
+  },
+  "samp_vol_we_dna_ext": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000111"
+  },
+  "sampleSizeUnit": {
+    "class": "Event",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "sampleSizeValue"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/sampleSizeUnit"
+  },
+  "sampleSizeValue": {
+    "class": "Event",
+    "format": "nonneg_number",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "sampleSizeUnit"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/sampleSizeValue"
+  },
+  "sampledSubstrateCategory": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/sampledSubstrateCategory"
+  },
+  "sampledSubstrateLayer": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/sampledSubstrateLayer"
+  },
+  "samplingEffort": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/samplingEffort"
+  },
+  "samplingProtocol": {
+    "class": "Event",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/samplingProtocol"
+  },
+  "scientificName": {
+    "class": "Taxon",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "scientificNameID"
+      }
+    ],
+    "tier": "required",
+    "uri": "http://rs.tdwg.org/dwc/terms/scientificName"
+  },
+  "scientificNameAuthorship": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/scientificNameAuthorship"
+  },
+  "scientificNameID": {
+    "class": "Taxon",
+    "format": "uri",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "scientificName"
+      }
+    ],
+    "tier": "required_if_occurrence_core",
+    "uri": "http://rs.tdwg.org/dwc/terms/scientificNameID"
+  },
+  "seq_meth": {
+    "class": "DNADerivedData",
+    "format": "controlled",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000050"
+  },
+  "seq_quality_check": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000051"
+  },
+  "sex": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/sex"
+  },
+  "sim_search_meth": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000063"
+  },
+  "single_cell_lysis_appr": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000076"
+  },
+  "single_cell_lysis_prot": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000054"
+  },
+  "siteNumber": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/siteNumber"
+  },
+  "size_frac": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000017"
+  },
+  "sop": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000090"
+  },
+  "sort_tech": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000075"
+  },
+  "source_mat_id": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000026"
+  },
+  "source_uvig": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000035"
+  },
+  "specificEpithet": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/specificEpithet"
+  },
+  "specific_host": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000029"
+  },
+  "startDayOfYear": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/startDayOfYear"
+  },
+  "stateProvince": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/stateProvince"
+  },
+  "subfamily": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/subfamily"
+  },
+  "subgenus": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/subgenus"
+  },
+  "subspecf_gen_lin": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000020"
+  },
+  "subtribe": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/subtribe"
+  },
+  "superfamily": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/superfamily"
+  },
+  "target_gene": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000044"
+  },
+  "target_subfragment": {
+    "class": "DNADerivedData",
+    "tier": "recommended",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000045"
+  },
+  "tax_class": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000064"
+  },
+  "tax_ident": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000053"
+  },
+  "taxonConceptID": {
+    "class": "Taxon",
+    "format": "uri",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonConceptID"
+  },
+  "taxonFormula": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonFormula"
+  },
+  "taxonID": {
+    "class": "Taxon",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonID"
+  },
+  "taxonRank": {
+    "class": "Taxon",
+    "format": "controlled",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonRank",
+    "vocabulary": [
+      "class",
+      "cohort",
+      "cultivar",
+      "cultivar_group",
+      "domain",
+      "family",
+      "form",
+      "genus",
+      "grandorder",
+      "infraclass",
+      "infracohort",
+      "infrafamily",
+      "infragenus",
+      "infrakingdom",
+      "infralegion",
+      "infraorder",
+      "infraphylum",
+      "infratribe",
+      "kingdom",
+      "legion",
+      "magnorder",
+      "order",
+      "other",
+      "parvclass",
+      "parvorder",
+      "phylum",
+      "species",
+      "species_aggregate",
+      "strain",
+      "subclass",
+      "subcohort",
+      "subfamily",
+      "subform",
+      "subgenus",
+      "subkingdom",
+      "sublegion",
+      "suborder",
+      "subphylum",
+      "subspecies",
+      "subspecific_aggregate",
+      "subtribe",
+      "subvariety",
+      "superclass",
+      "supercohort",
+      "superfamily",
+      "superkingdom",
+      "superlegion",
+      "superorder",
+      "superphylum",
+      "supertribe",
+      "suprageneric_name",
+      "tribe",
+      "unranked",
+      "variety"
+    ]
+  },
+  "taxonRemarks": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonRemarks"
+  },
+  "taxonomicStatus": {
+    "class": "Taxon",
+    "format": "controlled",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/taxonomicStatus"
+  },
+  "thresholdQuantificationCycle": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "http://rs.gbif.org/terms/miqe/thresholdQuantificationCycle"
+  },
+  "tribe": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/tribe"
+  },
+  "trna_ext_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000068"
+  },
+  "trnas": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000067"
+  },
+  "trophic_level": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000032"
+  },
+  "type": {
+    "class": "record-level",
+    "tier": "optional",
+    "uri": "http://purl.org/dc/elements/1.1/type"
+  },
+  "typeOfType": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/typeOfType"
+  },
+  "typeStatus": {
+    "class": "Identification",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/typeStatus"
+  },
+  "typifiedName": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/typifiedName"
+  },
+  "url": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000091"
+  },
+  "verbatimCoordinateSystem": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimCoordinateSystem"
+  },
+  "verbatimCoordinates": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimCoordinates"
+  },
+  "verbatimDepth": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimDepth"
+  },
+  "verbatimElevation": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimElevation"
+  },
+  "verbatimEventDate": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimEventDate"
+  },
+  "verbatimIdentification": {
+    "class": "Identification",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimIdentification"
+  },
+  "verbatimLabel": {
+    "class": "MaterialEntity",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimLabel"
+  },
+  "verbatimLatitude": {
+    "class": "Location",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "verbatimLongitude"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimLatitude"
+  },
+  "verbatimLocality": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimLocality"
+  },
+  "verbatimLongitude": {
+    "class": "Location",
+    "pairs": [
+      {
+        "severity": "error",
+        "with": "verbatimLatitude"
+      }
+    ],
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimLongitude"
+  },
+  "verbatimSRS": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimSRS"
+  },
+  "verbatimTaxonRank": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verbatimTaxonRank"
+  },
+  "vernacularName": {
+    "class": "Taxon",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/vernacularName"
+  },
+  "verticalDatum": {
+    "class": "Location",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/verticalDatum"
+  },
+  "vir_ident_software": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000081"
+  },
+  "virus_enrich_appr": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000036"
+  },
+  "vitality": {
+    "class": "Occurrence",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/vitality"
+  },
+  "waterBody": {
+    "class": "Location",
+    "tier": "recommended",
+    "uri": "http://rs.tdwg.org/dwc/terms/waterBody"
+  },
+  "wga_amp_appr": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000055"
+  },
+  "wga_amp_kit": {
+    "class": "DNADerivedData",
+    "tier": "optional",
+    "uri": "https://w3id.org/gensc/terms/MIXS:0000006"
+  },
+  "year": {
+    "class": "Event",
+    "tier": "optional",
+    "uri": "http://rs.tdwg.org/dwc/terms/year"
+  }
+}
