@@ -1,0 +1,61 @@
+{
+  "id": "ingest-fixture",
+  "format": "Biological Observation Matrix 1.0.0",
+  "format_url": "http://biom-format.org",
+  "type": "OTU table",
+  "generated_by": "make_ingest_fixtures.py",
+  "date": "2026-08-12T00:00:00",
+  "matrix_type": "sparse",
+  "matrix_element_type": "int",
+  "shape": [
+    2,
+    2
+  ],
+  "rows": [
+    {
+      "id": "asv1",
+      "metadata": {
+        "taxonomy": [
+          "d__Bacteria",
+          "p__Cyanobacteria"
+        ]
+      }
+    },
+    {
+      "id": "asv2",
+      "metadata": {
+        "taxonomy": [
+          "d__Bacteria",
+          "p__Firmicutes"
+        ]
+      }
+    }
+  ],
+  "columns": [
+    {
+      "id": "S001",
+      "metadata": null
+    },
+    {
+      "id": "S002",
+      "metadata": null
+    }
+  ],
+  "data": [
+    [
+      0,
+      0,
+      10
+    ],
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      20
+    ]
+  ]
+}

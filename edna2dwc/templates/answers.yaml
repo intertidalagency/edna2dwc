@@ -1,0 +1,123 @@
+# Everything a person decides about this dataset. edna2dwc writes this file once,
+# with `init`, and never again. Edit it, then run `edna2dwc build`.
+
+dataset_id: $dataset_id
+created: $created
+# The archive directory, inside this one. build empties it every time, so it holds
+# only what build wrote.
+out_dir: $out_dir
+
+# Every answer in this file is {value: ..., provenance: ..., confirmed: ...}. A setting,
+# which says how the tool runs rather than what is true of the data, is a plain value:
+# out_dir, the taxonomy: block, exclude_kingdoms, sample_metadata and the column names
+# under filters: and derive_fields:, metadata.version, term_states.assay_type and the
+# build: block. Writing a setting as an answer, or an answer as a bare value, fails
+# when this file loads.
+# provenance: what the value rests on: the document and where in it, the data it was
+# read from, or why it was chosen. confirmed: a person's reply, pasted as they gave
+# it, or empty. Only a person's words go in confirmed. build holds the archive in
+# review until every confirmed: is filled; with nobody to ask, run build --automatic.
+# build halts until title, creators, abstract, license, contacts and pub_date are each
+# set, or blank with provenance: saying what the value waits on. A blank is left out of
+# the archive, which stays in review until it is set. Never fill in a value no person
+# or document gave. license and pub_date are often decided at publication.
+# license is one of the licenses GBIF accepts: $licenses.
+# pub_date is YYYY or YYYY-MM-DD. methods_description is the sampling and lab methods
+# as a source states them, written as the first step of eml.xml's methods.
+# creators and contacts are lists of people; each needs a surname or an organization:
+#   - {given: Ana, surname: Lopez, organization: "Example Institute, Marine Lab",
+#      email: ana.lopez@example.com, orcid: 0000-0002-1825-0097}
+# bounding_box is in decimal degrees: {west: -123.3, south: 49.2, east: -123.0, north: 49.4}
+# project is optional; give it only when a source names the project. It needs a
+# title and personnel, each person with a role; funding names the grant. The GBIF
+# EML profile has no place for funding outside a project, so funding a source gives
+# without a project can't be published; never invent a project title to carry it:
+#   {title: Kelp eDNA, personnel: [{given: Ana, surname: Lopez, role: principalInvestigator}],
+#    funding: NSF award 1234567}
+# version is a bare number, not an answer. It ends eml.xml's packageId,
+# <dataset_id>/v<version>: bump it when republishing a corrected archive.
+metadata:
+  version: 1
+$metadata_answers
+
+# What each marker amplifies, answered from primer sequences, .qza provenance or
+# the methods, never from the marker's name. One entry per value of the table's
+# marker column, or exactly one entry, under any name, if it has no marker column.
+# Targets: $marker_targets.
+#   MiFish-U: {target: vertebrates, provenance: 'methods.pdf, MiFish-U primers', confirmed: 'PI: yes, fish'}
+# A marker's own taxonomy: block overrides the settings below for its rows only:
+#   16S: {target: prokaryotes, provenance: 'methods.pdf, 515F/806R primers', confirmed: '',
+#     taxonomy: {registers: [worms]}}
+# Taxa a study's methods removed from one marker's results match any name in a row's
+# source lineage or resolved taxonomy, and are listed in excluded_rows_report.tsv:
+#   18S: {..., exclude_taxa: {value: [Metazoa], provenance: 'paper.pdf, Methods', confirmed: ''}}
+markers: {}
+
+# Whether a sample is a control, which build asks when its ID only weakly matches a
+# control keyword. An answer settles any sample, so it also keeps a site named like a
+# control, or excludes a control the roster in proposed/ missed. control or sample:
+#   NC05: {value: sample, provenance: 'NC is the North Cove site in metadata.csv',
+#     confirmed: 'PI: NC05 is a field sample'}
+controls: {}
+
+# A term with one value for the whole dataset. It fills the rows the data leaves
+# blank, and one that would replace a value from the data stops the build. A value
+# that differs by marker, such as a primer, goes under that marker:
+#   markers: {16S: {target: bacteria, provenance: ..., constants:
+#     {pcr_primer_forward: {value: GTGYCAGCMGCCGCGGTAA, provenance: 'methods.pdf, Table 1'}}}}
+#   samplingProtocol: {value: 1 L filtered through 0.45 um, provenance: 'methods.pdf, p. 3'}
+# A taxonomy term, such as kingdom or phylum, can't be a constant: change a taxon in
+# confirmed/taxa.tsv. count is published as DNA sequence reads; when it measures
+# something else, organismQuantityType names it, and sampleSizeValue isn't summed:
+#   organismQuantityType: {value: relative abundance, provenance: 'methods.pdf, p. 4'}
+constants: {}
+
+# The unit of a measurement column. An entry fills a unit the header and values don't
+# name, and replaces one they do, as temp_C or 12.3 F, when the inferred unit is wrong:
+#   conductivity: {value: mS/cm, provenance: 'methods.pdf, Table 2'}
+units: {}
+
+# How resolve-taxonomy matches names. registers: the registers to try at each name, in
+# order; [worms] never asks GBIF, and [gbif] never asks WoRMS. marine_only: match
+# marine WoRMS taxa only. require_confident: refuse fuzzy and non-confident matches,
+# so a name a register only nearly knows backs off to the rank above it; false keeps
+# the near match, flagged for review. refresh_labels: fetch each AphiaID's current name.
+# terminal_fallback: what a real name that resolves nowhere becomes, incertae-sedis
+# (Biota incertae sedis) or biota. Run resolve-taxonomy again after changing these.
+$taxonomy
+
+# exclude_human: true drops human (Homo) rows, usually contamination; null until you
+# decide, and build asks when the table has any. Answer it as
+# {value: true, provenance: <why>, confirmed: <the person's reply>}. exclude_kingdoms:
+# kingdoms to drop, such as
+# [Bacteria], dropped only for a marker whose target doesn't cover them. A sample is
+# a control by the first of: sample_metadata, a CSV or TSV keyed by sampleID, given as
+# a plain path with sample_type_col naming its type column; occurrence_type_col, a
+# type column in the table; a control keyword in its sampleID. A type value is read
+# with the same keywords, so 'rtsf blank' is a control and 'NC' alone asks:
+#   sample_metadata: tables/samples.csv
+#   sample_type_col: sample_type
+$filters
+
+# timestamp_col_a and timestamp_col_b: two columns that both give the sampling time;
+# a row where they differ keeps both in verbatimEventDate. emit_absences: publish
+# the zero counts assemble --keep-zeros kept as absent, only for a targeted_assay
+# with constants.pcr_primer_lod.
+$derive_fields
+
+# assay_type: $assay_types. Each term under not_applicable,
+# ask or impossible maps to {provenance: <the reason>, confirmed: <a person's reply>}.
+# not_applicable: the term doesn't apply to this design. ask: someone could supply it.
+# impossible: it was never recorded:
+#   impossible: {annealingTemp: {provenance: 'the methods give primers but no PCR profile',
+#     confirmed: ''}}
+$term_states
+
+# Validator issues a person judged, by issue class:
+#   adjudications: {ON_LAND: {status: accepted, provenance: 'intertidal sites',
+#     confirmed: 'PI: the sites are intertidal, the coordinates are right'}}
+adjudications: {}
+
+# no_dna_extension and no_emof keep DNA columns in the core, or dynamicProperties as
+# it is. package takes them as --no-dna-extension and --no-emof. mixs_uri_style: $mixs_uri_styles.
+$build

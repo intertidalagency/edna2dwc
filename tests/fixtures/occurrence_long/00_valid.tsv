@@ -1,0 +1,4 @@
+sampleID	featureID	count	taxonomy
+s1	f1	10	d__Bacteria;p__Cyanobacteria
+s1	f2	5	d__Bacteria;p__Firmicutes
+s2	f1	20	d__Bacteria;p__Cyanobacteria
