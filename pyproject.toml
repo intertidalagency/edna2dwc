@@ -7,6 +7,10 @@ name = "edna2dwc"
 version = "0.1.0"
 description = "Convert eDNA/metabarcoding data into Darwin Core Archives for GBIF and OBIS"
 authors = [
+  { name = "Bernard Beckerman", email = "info@drivendata.org" },
+  { name = "Chris Kucharczyk", email = "info@drivendata.org" },
+  { name = "Stephen Formel", email = "info@thedatapatch.com" },
+  { name = "Peter Bull", email = "info@drivendata.org" },
   { name = "Intertidal Agency" },
   { name = "DrivenData", email = "info@drivendata.org" },
   { name = "The Data Patch", email = "info@thedatapatch.com" },
