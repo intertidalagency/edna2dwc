@@ -95,7 +95,7 @@ After every lineage resolves, `resolve-taxonomy` looks for mass collapse: five o
 
 ## Confident matches
 
-A WoRMS match is confident when its type is `exact`, `exact_subgenus` or `exact_replaced`, and the returned name equals the name asked for. The comparison ignores case and a parenthesized subgenus, and reads `_` as a space. A GBIF match is confident when it is `EXACT` and its `canonicalName` agrees. A `HIGHERRANK` match whose `canonicalName` is the name asked for is also confident: GBIF answers `HIGHERRANK` for `Prevotella` because the backbone holds placeholder species under it, but the genus it returns is the name asked for.
+A WoRMS match is confident when its type is `exact`, `exact_subgenus` or `exact_replaced`, and the returned name equals the name asked for. The comparison ignores case and a parenthesized subgenus, and reads `_` as a space. A GBIF match is confident when it is `EXACT` and its `canonicalName` agrees. A `HIGHERRANK` match whose `canonicalName` is the name asked for is also confident: GBIF answers `HIGHERRANK` for `Prevotella` because the backbone holds placeholder species under it, but the genus it returns is the name asked for. A GBIF placeholder species, such as `Mesonia sp012964435` or `Prevotella sp. sp018385335`, is compared by its full name, though GBIF gives it the genus as `canonicalName`, so it never matches a genus or ties with it as a homonym.
 
 WoRMS answers `exact` for `Bacteroidetes BD2-2` with the phylum `Bacteroidetes`. The names differ, so that match is not confident.
 
@@ -105,7 +105,7 @@ A single plausible match that is confident and accepted wins. Any other single p
 
 ## Homonyms
 
-When two or more candidates are exact and accepted, the source's `phylum` and then `class` narrow them. A step that would remove every candidate is skipped. If one candidate is left, it wins as `homonym_disambiguated`. If more are left, the first is published with `needs_review=true`, every tied ID goes in `candidate_ids`, and the reason is `homonym_source_mismatch` (the source ranks matched none) or `ambiguous_homonym`.
+When two or more candidates are exact and accepted, the rank the source gives the name narrows them first, so a source kingdom `Bacteria` is the kingdom and not the stick-insect genus _Bacteria_. The source's `phylum` and then `class` narrow them next. A step that would remove every candidate is skipped. If one candidate is left, it wins as `homonym_disambiguated`. If more are left, the first is published with `needs_review=true`, every tied ID goes in `candidate_ids`, and the reason is `homonym_source_mismatch` (the source ranks matched none) or `ambiguous_homonym`.
 
 ## Kingdom checks
 

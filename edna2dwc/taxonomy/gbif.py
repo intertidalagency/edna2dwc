@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import re
 
 import httpx
 
@@ -11,6 +12,7 @@ from edna2dwc.taxonomy.register_http import TIMEOUT
 
 BASE_URL = "https://api.gbif.org/v1"
 CONFIDENT_MATCH_TYPES = ("EXACT",)
+PLACEHOLDER_SPECIES_RE = re.compile(r"^\S+\s+(?:sp\.\s+)?sp\d+$", re.IGNORECASE)
 
 
 class GbifError(RuntimeError):
@@ -43,6 +45,8 @@ class GbifMatch:
 
     @property
     def name(self) -> str:
+        if PLACEHOLDER_SPECIES_RE.match(self.scientific_name.strip()):
+            return self.scientific_name.strip()
         return self.canonical_name
 
     @property

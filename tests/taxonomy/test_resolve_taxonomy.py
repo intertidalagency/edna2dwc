@@ -679,6 +679,65 @@ def test_gbif_ambiguous_homonym_never_guesses():
     assert _codes(result) == ["TAXON_AMBIGUOUS_HOMONYM"]
 
 
+@pytest.mark.parametrize(
+    "placeholder", ["Mesonia sp012964435", "Mesonia sp. sp012964435"], ids=["sp", "sp_dot_sp"]
+)
+def test_a_gbif_placeholder_species_is_not_a_homonym_of_its_genus(placeholder):
+    genus = _gbif_match(
+        usageKey=3228676,
+        scientificName="Mesonia Nedashkovskaya et al., 2003",
+        canonicalName="Mesonia",
+        kingdom="Bacteria",
+        genus="Mesonia",
+    )
+    genus["alternatives"] = [
+        _gbif_match(
+            usageKey=12197467,
+            scientificName=placeholder,
+            canonicalName="Mesonia",
+            rank="SPECIES",
+            kingdom="Bacteria",
+            genus="Mesonia",
+        )
+    ]
+    resolver = _gbif_resolver(
+        lambda request: httpx.Response(200, json=genus),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Mesonia", {"kingdom": "Bacteria", "genus": "Mesonia"})
+    assert result.gbif_usage_key == "3228676"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
+    assert result.candidate_ids == ""
+
+
+def test_a_homonym_tie_is_broken_by_the_rank_the_source_gives_the_name():
+    kingdom = _gbif_match(usageKey=3, canonicalName="Bacteria", rank="KINGDOM", kingdom="Bacteria")
+    kingdom["alternatives"] = [
+        _gbif_match(
+            usageKey=1411344,
+            scientificName="Bacteria Berthold, 1827",
+            canonicalName="Bacteria",
+            rank="GENUS",
+            kingdom="Animalia",
+            phylum="Arthropoda",
+            genus="Bacteria",
+        )
+    ]
+    resolver = _gbif_resolver(
+        lambda request: httpx.Response(200, json=kingdom),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Bacteria", {"kingdom": "Bacteria"})
+    assert result.gbif_usage_key == "3"
+    assert result.resolution_path == "homonym_disambiguated"
+    assert result.needs_review is False
+
+
 def test_gbif_homonym_source_mismatch_when_neither_candidate_agrees():
     result = _gbif_resolver(_gbif_homonyms(DIATOM, MOLLUSC)).resolve(
         "Homonymus", {"kingdom": "Unknownia", "phylum": "Nope"}

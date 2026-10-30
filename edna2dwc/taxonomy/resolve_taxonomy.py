@@ -291,15 +291,29 @@ def _for_review(result: ResolvedTaxon, review_reason: str) -> ResolvedTaxon:
     return result
 
 
+def _source_rank_of(name: str, source_ranks: Mapping[str, str]) -> str:
+    query = _comparable_name(name)
+    return next(
+        (
+            rank
+            for rank, value in source_ranks.items()
+            if value and _comparable_name(value) == query
+        ),
+        "",
+    )
+
+
 def _homonym_tiebreak(
-    candidates: list[_Candidate], source_phylum: str, source_class: str
+    candidates: list[_Candidate], source_phylum: str, source_class: str, source_rank: str = ""
 ) -> tuple[_Candidate | None, str]:
     if len(candidates) < 2:
         raise HomonymTiebreakError(
             f"_homonym_tiebreak needs >=2 candidates, got {len(candidates)}"
         )
 
-    surviving = candidates
+    surviving = [c for c in candidates if c.rank.casefold() == source_rank] or candidates
+    if len(surviving) == 1:
+        return surviving[0], "homonym_disambiguated"
     phylum_matched = False
     class_matched = False
 
@@ -639,10 +653,13 @@ class TaxonResolver:
         return plausible
 
     def _break_homonym_tie(
-        self, confident: list[_Candidate], source_ranks: dict[str, str]
+        self, confident: list[_Candidate], name: str, source_ranks: dict[str, str]
     ) -> ResolvedTaxon:
         winner, reason = _homonym_tiebreak(
-            confident, source_ranks.get("phylum", ""), source_ranks.get("class", "")
+            confident,
+            source_ranks.get("phylum", ""),
+            source_ranks.get("class", ""),
+            _source_rank_of(name, source_ranks),
         )
         if winner is not None:
             self._bump("TAXON_HOMONYM_DISAMBIGUATED")
@@ -677,7 +694,7 @@ class TaxonResolver:
         plausible = self._plausible(self._worms.match_one(name), name, source_ranks)
         confident = _confident_accepted(plausible, name)
         if len(confident) >= 2:
-            return self._break_homonym_tie(confident, source_ranks)
+            return self._break_homonym_tie(confident, name, source_ranks)
         if len(confident) == 1:
             return _from_worms_record(confident[0], resolution_path="leaf")
         if len(plausible) == 1:
@@ -947,7 +964,7 @@ class TaxonResolver:
         alternatives = [GbifMatch.from_raw(a) for a in match.alternatives]
         confident = _confident_accepted([match, *alternatives], name)
         if len(confident) >= 2:
-            return self._break_homonym_tie(confident, source_ranks)
+            return self._break_homonym_tie(confident, name, source_ranks)
         if _is_confident(match, name) and match.is_accepted:
             return _from_gbif_match(match, resolution_path="leaf")
         if (
