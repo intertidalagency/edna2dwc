@@ -202,9 +202,10 @@ _Candidate = TypeVar("_Candidate", AphiaRecord, GbifMatch)
 
 
 def _is_confident(candidate: AphiaRecord | GbifMatch, query: str) -> bool:
-    return candidate.is_confident_match_type and _comparable_name(
-        candidate.name
-    ) == _comparable_name(query)
+    names_the_query = _comparable_name(candidate.name) == _comparable_name(query)
+    return names_the_query and (
+        candidate.is_confident_match_type or candidate.match_type == "HIGHERRANK"
+    )
 
 
 def _confident_accepted(candidates: Iterable[_Candidate], query: str) -> list[_Candidate]:

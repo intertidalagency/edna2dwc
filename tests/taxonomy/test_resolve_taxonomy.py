@@ -1641,6 +1641,54 @@ def test_a_gbif_higher_rank_match_below_every_resolved_ancestor_stands():
     assert result.review_reason == "gbif_higher_rank_match"
 
 
+GBIF_PREVOTELLA_AS_HIGHER_RANK = _gbif_match(
+    usageKey=60,
+    scientificName="Prevotella Shah & Collins, 1990",
+    canonicalName="Prevotella",
+    rank="GENUS",
+    matchType="HIGHERRANK",
+    kingdom="Bacteria",
+    phylum="Bacteroidota",
+    family="Prevotellaceae",
+    genus="Prevotella",
+)
+GBIF_PREVOTELLACEAE = _gbif_match(
+    usageKey=61,
+    canonicalName="Prevotellaceae",
+    rank="FAMILY",
+    kingdom="Bacteria",
+    phylum="Bacteroidota",
+    family="Prevotellaceae",
+)
+PREVOTELLA_LINEAGE = {"kingdom": "Bacteria", "family": "Prevotellaceae", "genus": "Prevotella"}
+
+
+def _prevotella_resolver() -> TaxonResolver:
+    return _gbif_resolver(
+        _gbif_by_name(
+            {"Prevotella": GBIF_PREVOTELLA_AS_HIGHER_RANK, "Prevotellaceae": GBIF_PREVOTELLACEAE}
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+
+
+def test_a_gbif_higher_rank_match_naming_the_queried_taxon_is_a_confident_match():
+    result = _prevotella_resolver().resolve("Prevotella", PREVOTELLA_LINEAGE)
+    assert result.scientific_name == "Prevotella"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
+    assert result.review_reason == ""
+
+
+def test_rank_backoff_stops_at_a_higher_rank_match_naming_the_queried_genus():
+    result = _prevotella_resolver().resolve("Prevotella copri", PREVOTELLA_LINEAGE)
+    assert result.scientific_name == "Prevotella"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+
+
 def test_a_gbif_higher_rank_match_lets_the_next_register_try_the_same_name():
     worms = _worms_transport(
         {
