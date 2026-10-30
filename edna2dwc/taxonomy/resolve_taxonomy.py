@@ -99,6 +99,7 @@ class ResolvedTaxon:
     provenance: str = ""
     confirmed: str = ""
     gbif_usage_key: str = ""
+    gbif_higher_rank_only: bool = False
     findings: list[str] = field(default_factory=list)
     settings: str = ""
 
@@ -336,6 +337,31 @@ def _expand_compound_parts(name: str) -> list[str]:
             if len(tokens) >= 2:
                 last_genus = tokens[0]
     return expanded
+
+
+def _classification(result: ResolvedTaxon) -> set[str]:
+    names = (
+        result.kingdom,
+        result.phylum,
+        result.class_,
+        result.order,
+        result.family,
+        result.genus,
+    )
+    return {name.casefold() for name in names if name}
+
+
+def _sits_above(ancestor: ResolvedTaxon, result: ResolvedTaxon) -> bool:
+    name = ancestor.scientific_name.casefold()
+    return name != result.scientific_name.casefold() and name in _classification(result)
+
+
+def _beats_higher_rank_match(backed_off: ResolvedTaxon | None, higher_rank: ResolvedTaxon) -> bool:
+    return (
+        backed_off is not None
+        and not backed_off.gbif_higher_rank_only
+        and not _sits_above(backed_off, higher_rank)
+    )
 
 
 def _flag_for_review(result: ResolvedTaxon, reason: str) -> None:
@@ -841,13 +867,16 @@ class TaxonResolver:
         if resolved is not None:
             if resolved.resolution_path == "leaf" and resolved.authority != self._registers[0]:
                 resolved.resolution_path = f"{resolved.authority}_fallback"
-            return resolved
+            if not resolved.gbif_higher_rank_only:
+                return resolved
 
-        resolved = self._resolve_by_rank_backoff(
+        backed_off = self._resolve_by_rank_backoff(
             source_ranks, unranked, require_confident=require_confident
         )
-        if resolved is not None:
+        if resolved is not None and not _beats_higher_rank_match(backed_off, resolved):
             return resolved
+        if backed_off is not None:
+            return backed_off
 
         self._bump("TAXON_UNRESOLVED")
         return self._terminal()
@@ -859,27 +888,35 @@ class TaxonResolver:
         *,
         require_confident: bool,
     ) -> ResolvedTaxon | None:
+        higher_rank_match = None
         for name in _backoff_names(source_ranks, unranked):
             resolved = self._resolve_at_registers(
                 name, source_ranks, require_confident=require_confident
             )
-            if resolved is not None:
-                if resolved.resolution_path == "leaf":
-                    resolved.resolution_path = "rank_backoff"
+            if resolved is None:
+                continue
+            if resolved.resolution_path == "leaf":
+                resolved.resolution_path = "rank_backoff"
+            if not resolved.gbif_higher_rank_only:
                 return resolved
-        return None
+            higher_rank_match = higher_rank_match or resolved
+        return higher_rank_match
 
     def _resolve_at_registers(
         self, name: str, source_ranks: dict[str, str], *, require_confident: bool
     ) -> ResolvedTaxon | None:
         if not _is_sendable(name):
             return None
+        higher_rank_match = None
         for register in self._registers:
             resolve_at = self._resolve_at_worms if register == "worms" else self._resolve_at_gbif
             resolved = resolve_at(name, source_ranks, require_confident=require_confident)
-            if resolved is not None:
+            if resolved is None:
+                continue
+            if not resolved.gbif_higher_rank_only:
                 return resolved
-        return None
+            higher_rank_match = higher_rank_match or resolved
+        return higher_rank_match
 
     def _resolve_at_gbif(
         self, name: str, source_ranks: dict[str, str], *, require_confident: bool
@@ -928,9 +965,9 @@ class TaxonResolver:
                 "gbif_synonym_resolved_to_accepted",
             )
         if match.match_type == "HIGHERRANK":
-            return _for_review(
-                _from_gbif_match(match, resolution_path="leaf"), "gbif_higher_rank_match"
-            )
+            result = _from_gbif_match(match, resolution_path="leaf")
+            result.gbif_higher_rank_only = True
+            return _for_review(result, "gbif_higher_rank_match")
         return self._kept_despite_doubt(match, name, require_confident=require_confident)
 
     def _with_worms_lsid(self, result: ResolvedTaxon, name: str) -> ResolvedTaxon:

@@ -1504,6 +1504,169 @@ def test_a_rank_backoff_that_gbif_resolves_is_labelled_rank_backoff():
     assert result.resolution_path == "rank_backoff"
 
 
+GBIF_BACTERIA = _gbif_match(
+    usageKey=3, canonicalName="Bacteria", rank="KINGDOM", kingdom="Bacteria"
+)
+GBIF_BACTERIA_AS_HIGHER_RANK = {**GBIF_BACTERIA, "matchType": "HIGHERRANK", "confidence": 90}
+GBIF_PROTEOBACTERIA = _gbif_match(
+    usageKey=11,
+    canonicalName="Proteobacteria",
+    rank="PHYLUM",
+    kingdom="Bacteria",
+    phylum="Proteobacteria",
+)
+GBIF_VERRUCOMICROBIA_SYNONYM = _gbif_match(
+    usageKey=7,
+    canonicalName="Verrucomicrobia",
+    rank="PHYLUM",
+    status="SYNONYM",
+    synonym=True,
+    acceptedUsageKey=8,
+    kingdom="Bacteria",
+    phylum="Verrucomicrobiota",
+)
+GBIF_VERRUCOMICROBIOTA_RECORD = {
+    "key": 8,
+    "canonicalName": "Verrucomicrobiota",
+    "rank": "PHYLUM",
+    "taxonomicStatus": "ACCEPTED",
+    "kingdom": "Bacteria",
+    "phylum": "Verrucomicrobiota",
+}
+
+
+def _gbif_by_name(matches: dict[str, dict], records: dict[int, dict] | None = None):
+    def handler(request):
+        for key, record in (records or {}).items():
+            if request.url.path.endswith(f"/species/{key}"):
+                return httpx.Response(200, json=record)
+        name = request.url.params.get("name")
+        return httpx.Response(200, json=matches.get(name, {"matchType": "NONE"}))
+
+    return handler
+
+
+def test_a_gbif_higher_rank_match_on_the_leaf_backs_off_to_a_confident_ancestor():
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Proteobacteria": GBIF_PROTEOBACTERIA,
+                "Bacteria": GBIF_BACTERIA,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Deltaproteobacteria",
+        {"kingdom": "Bacteria", "phylum": "Proteobacteria", "class": "Deltaproteobacteria"},
+    )
+    assert result.scientific_name == "Proteobacteria"
+    assert result.taxon_rank == "PHYLUM"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+    assert result.review_reason == ""
+
+
+def test_higher_rank_matches_on_ancestors_keep_backing_off_to_a_synonym_ancestor():
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Pedosphaerales": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Pedosphaerae": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Verrucomicrobia": GBIF_VERRUCOMICROBIA_SYNONYM,
+                "Bacteria": GBIF_BACTERIA,
+            },
+            {8: GBIF_VERRUCOMICROBIOTA_RECORD},
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Pedosphaerales",
+        {
+            "kingdom": "Bacteria",
+            "phylum": "Verrucomicrobia",
+            "class": "Pedosphaerae",
+            "order": "Pedosphaerales",
+        },
+    )
+    assert result.scientific_name == "Verrucomicrobiota"
+    assert result.resolution_path == "rank_backoff"
+    assert result.review_reason == "gbif_synonym_resolved_to_accepted"
+
+
+def test_a_gbif_higher_rank_match_stands_when_no_ancestor_resolves():
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Deltaproteobacteria",
+        {"kingdom": "Bacteria", "phylum": "Unknownia", "class": "Deltaproteobacteria"},
+    )
+    assert result.scientific_name == "Bacteria"
+    assert result.resolution_path == "leaf"
+    assert result.review_reason == "gbif_higher_rank_match"
+
+
+def test_a_gbif_higher_rank_match_below_every_resolved_ancestor_stands():
+    higher_rank_genus = _gbif_match(
+        usageKey=50,
+        canonicalName="Pelagibacter",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        kingdom="Bacteria",
+        phylum="Proteobacteria",
+        genus="Pelagibacter",
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {"Pelagibacter ubique": higher_rank_genus, "Proteobacteria": GBIF_PROTEOBACTERIA}
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Pelagibacter ubique", {"kingdom": "Bacteria", "phylum": "Proteobacteria"}
+    )
+    assert result.scientific_name == "Pelagibacter"
+    assert result.resolution_path == "leaf"
+    assert result.review_reason == "gbif_higher_rank_match"
+
+
+def test_a_gbif_higher_rank_match_lets_the_next_register_try_the_same_name():
+    worms = _worms_transport(
+        {
+            "Deltaproteobacteria": [
+                _record(
+                    AphiaID=391,
+                    scientificname="Deltaproteobacteria",
+                    rank="Class",
+                    kingdom="Bacteria",
+                    phylum="Proteobacteria",
+                    **{"class": "Deltaproteobacteria"},
+                )
+            ]
+        }
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK}),
+        worms,
+        require_confident=True,
+        registers=("gbif", "worms"),
+    )
+    result = resolver.resolve("Deltaproteobacteria", {"kingdom": "Bacteria"})
+    assert result.scientific_name == "Deltaproteobacteria"
+    assert result.authority == "worms"
+
+
 GBIF_INSECT_GENUS_NAMED_GENUS = _gbif_match(
     usageKey=8513230,
     scientificName="Genus Becker, 1907",

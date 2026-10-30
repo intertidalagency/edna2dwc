@@ -45,7 +45,10 @@ _REVIEW_REASONS = {
         "the GBIF backbone lists the name as a synonym, and its accepted name could not be "
         "looked up"
     ),
-    "gbif_higher_rank_match": "the GBIF backbone matched only a rank above the name",
+    "gbif_higher_rank_match": (
+        "the GBIF backbone matched only a rank above the name, and no rank of the source "
+        "lineage resolved deeper"
+    ),
 }
 
 _REVIEW_REASONS_WITH_VALUE = {
