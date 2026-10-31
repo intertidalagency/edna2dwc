@@ -13,6 +13,7 @@ from edna2dwc.taxonomy.register_http import TIMEOUT
 BASE_URL = "https://api.gbif.org/v1"
 CONFIDENT_MATCH_TYPES = ("EXACT",)
 PLACEHOLDER_SPECIES_RE = re.compile(r"^\S+\s+(?:sp\.\s+)?sp\d+$", re.IGNORECASE)
+GTDB_SUFFIXED_GENUS_RE = re.compile(r"^[A-Za-z]+_[A-Za-z]+\s")
 
 
 class GbifError(RuntimeError):
@@ -45,9 +46,18 @@ class GbifMatch:
 
     @property
     def name(self) -> str:
-        if PLACEHOLDER_SPECIES_RE.match(self.scientific_name.strip()):
+        if self.is_placeholder_species:
             return self.scientific_name.strip()
         return self.canonical_name
+
+    @property
+    def is_placeholder_species(self) -> bool:
+        scientific_name = self.scientific_name.strip()
+        return bool(
+            PLACEHOLDER_SPECIES_RE.match(scientific_name)
+            or GTDB_SUFFIXED_GENUS_RE.match(scientific_name)
+            or self.canonical_name.endswith(" spec.")
+        )
 
     @property
     def register_id(self) -> int | None:

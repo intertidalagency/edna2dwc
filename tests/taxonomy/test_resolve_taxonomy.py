@@ -713,7 +713,92 @@ def test_a_gbif_placeholder_species_is_not_a_homonym_of_its_genus(placeholder):
     assert result.candidate_ids == ""
 
 
-def test_a_homonym_tie_is_broken_by_the_rank_the_source_gives_the_name():
+GBIF_PAENIBACILLUS_GENUS = _gbif_match(
+    usageKey=3227538,
+    scientificName="Paenibacillus Ash et al., 1994",
+    canonicalName="Paenibacillus",
+    kingdom="Bacteria",
+    family="Paenibacillaceae",
+    genus="Paenibacillus",
+)
+
+
+def _paenibacillus_resolver(top: dict) -> TaxonResolver:
+    match = {**top, "alternatives": [GBIF_PAENIBACILLUS_GENUS]}
+    return _gbif_resolver(
+        lambda request: httpx.Response(200, json=match),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+
+
+PAENIBACILLUS_LINEAGES = pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [
+        ({"kingdom": "Bacteria", "family": "Paenibacillaceae", "genus": "Paenibacillus"}, ()),
+        ({}, ("Bacteria", "Firmicutes", "Paenibacillaceae", "Paenibacillus")),
+    ],
+    ids=["ranked", "unranked"],
+)
+
+
+@PAENIBACILLUS_LINEAGES
+def test_a_gtdb_placeholder_species_never_stands_for_its_genus(source_ranks, unranked):
+    placeholder = _gbif_match(
+        usageKey=12238403,
+        scientificName="Paenibacillus_K guangzhouensis",
+        canonicalName="Paenibacillus",
+        rank="SPECIES",
+        kingdom="Bacteria",
+        genus="Paenibacillus",
+    )
+    result = _paenibacillus_resolver(placeholder).resolve(
+        "Paenibacillus", source_ranks, unranked=unranked
+    )
+    assert result.gbif_usage_key == "3227538"
+    assert result.taxon_rank == "GENUS"
+    assert result.needs_review is False
+    assert result.candidate_ids == ""
+
+
+@PAENIBACILLUS_LINEAGES
+def test_a_species_rank_match_never_stands_for_a_one_word_name(source_ranks, unranked):
+    species_named_like_its_genus = _gbif_match(
+        usageKey=12238404,
+        scientificName="Paenibacillus",
+        canonicalName="Paenibacillus",
+        rank="SPECIES",
+        kingdom="Bacteria",
+        genus="Paenibacillus",
+    )
+    result = _paenibacillus_resolver(species_named_like_its_genus).resolve(
+        "Paenibacillus", source_ranks, unranked=unranked
+    )
+    assert result.gbif_usage_key == "3227538"
+    assert result.taxon_rank == "GENUS"
+    assert result.needs_review is False
+
+
+def test_a_match_below_the_rank_the_source_gives_the_name_is_refused():
+    genus_named_like_a_family = _gbif_match(
+        usageKey=70, canonicalName="Oddaceae", rank="GENUS", kingdom="Bacteria"
+    )
+    order = _gbif_match(usageKey=71, canonicalName="Oddales", rank="ORDER", kingdom="Bacteria")
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Oddaceae": genus_named_like_a_family, "Oddales": order}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Oddaceae", {"kingdom": "Bacteria", "order": "Oddales", "family": "Oddaceae"}
+    )
+    assert result.gbif_usage_key == "71"
+    assert result.resolution_path == "rank_backoff"
+
+
+def test_a_gbif_candidate_below_the_rank_the_source_gives_the_name_is_no_homonym():
     kingdom = _gbif_match(usageKey=3, canonicalName="Bacteria", rank="KINGDOM", kingdom="Bacteria")
     kingdom["alternatives"] = [
         _gbif_match(
@@ -734,8 +819,9 @@ def test_a_homonym_tie_is_broken_by_the_rank_the_source_gives_the_name():
     )
     result = resolver.resolve("Bacteria", {"kingdom": "Bacteria"})
     assert result.gbif_usage_key == "3"
-    assert result.resolution_path == "homonym_disambiguated"
+    assert result.resolution_path == "leaf"
     assert result.needs_review is False
+    assert result.candidate_ids == ""
 
 
 def test_gbif_homonym_source_mismatch_when_neither_candidate_agrees():
