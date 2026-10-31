@@ -1834,6 +1834,35 @@ def test_rank_backoff_stops_at_a_higher_rank_match_naming_the_queried_genus():
     assert result.needs_review is False
 
 
+def test_a_gbif_higher_rank_match_below_the_source_rank_of_the_name_is_refused():
+    saprospira = _gbif_match(
+        usageKey=3228791,
+        scientificName="Saprospira Gross, 1911",
+        canonicalName="Saprospira",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        confidence=80,
+        kingdom="Bacteria",
+        phylum="Bacteroidota",
+        genus="Saprospira",
+    )
+    bacteroidota = _gbif_match(
+        usageKey=1853, canonicalName="Bacteroidota", rank="PHYLUM", kingdom="Bacteria"
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Saprospirae": saprospira, "Bacteroidota": bacteroidota}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Saprospirae", {"kingdom": "Bacteria", "phylum": "Bacteroidota", "class": "Saprospirae"}
+    )
+    assert result.gbif_usage_key == "1853"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+
+
 def test_a_gbif_higher_rank_match_lets_the_next_register_try_the_same_name():
     worms = _worms_transport(
         {
@@ -1858,6 +1887,72 @@ def test_a_gbif_higher_rank_match_lets_the_next_register_try_the_same_name():
     result = resolver.resolve("Deltaproteobacteria", {"kingdom": "Bacteria"})
     assert result.scientific_name == "Deltaproteobacteria"
     assert result.authority == "worms"
+
+
+def _carteria(usage_key: int, **classification) -> dict:
+    return _gbif_match(
+        usageKey=usage_key, canonicalName="Carteria", confidence=90, **classification
+    )
+
+
+GBIF_CARTERIA_UNDER_BACTERIA = {
+    **GBIF_BACTERIA_AS_HIGHER_RANK,
+    "alternatives": [
+        _carteria(3236261, kingdom="Fungi", phylum="Ascomycota", family="Chaetomiaceae"),
+        _carteria(
+            2639237,
+            kingdom="Plantae",
+            phylum="Chlorophyta",
+            order="Volvocales",
+            family="Chlamydomonadaceae",
+        ),
+        _carteria(3246043, kingdom="Animalia", phylum="Mollusca"),
+        _carteria(
+            2781870, kingdom="Plantae", phylum="Tracheophyta", status="SYNONYM", synonym=True
+        ),
+    ],
+}
+CHLOROPLAST_LINEAGE = (
+    "Bacteria",
+    "Cyanobacteria",
+    "Chloroplast",
+    "Chlorophyta",
+    "Chlamydomonadaceae",
+    "Carteria",
+)
+
+
+@pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [
+        (
+            dict(
+                zip(
+                    ("kingdom", "phylum", "class", "order", "family", "genus"), CHLOROPLAST_LINEAGE
+                )
+            ),
+            (),
+        ),
+        ({}, CHLOROPLAST_LINEAGE),
+    ],
+    ids=["ranked", "unranked"],
+)
+def test_a_homonym_tie_is_broken_by_any_name_in_the_source_lineage(source_ranks, unranked):
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Carteria cerasiformis": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Carteria": GBIF_CARTERIA_UNDER_BACTERIA,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Carteria cerasiformis", source_ranks, unranked=unranked)
+    assert result.gbif_usage_key == "2639237"
+    assert result.resolution_path == "homonym_disambiguated"
+    assert result.needs_review is False
 
 
 GBIF_INSECT_GENUS_NAMED_GENUS = _gbif_match(

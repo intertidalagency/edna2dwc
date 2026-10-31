@@ -328,8 +328,24 @@ def _source_rank_of(name: str, source_ranks: Mapping[str, str]) -> str:
     )
 
 
+def _candidate_classification(candidate: AphiaRecord | GbifMatch) -> set[str]:
+    names = (
+        candidate.kingdom,
+        candidate.phylum,
+        candidate.class_,
+        candidate.order,
+        candidate.family,
+        candidate.genus,
+    )
+    return {_comparable_name(name) for name in names if name}
+
+
 def _homonym_tiebreak(
-    candidates: list[_Candidate], source_phylum: str, source_class: str, source_rank: str = ""
+    candidates: list[_Candidate],
+    source_phylum: str,
+    source_class: str,
+    source_rank: str = "",
+    lineage_names: frozenset[str] = frozenset(),
 ) -> tuple[_Candidate | None, str]:
     if len(candidates) < 2:
         raise HomonymTiebreakError(
@@ -354,11 +370,18 @@ def _homonym_tiebreak(
             surviving = class_agreeing
             class_matched = True
 
+    lineage_matched = False
+    if len(surviving) > 1 and lineage_names:
+        lineage_agreeing = [c for c in surviving if _candidate_classification(c) & lineage_names]
+        if lineage_agreeing:
+            surviving = lineage_agreeing
+            lineage_matched = True
+
     if len(surviving) == 1:
         return surviving[0], "homonym_disambiguated"
 
     any_signal_supplied = bool(source_phylum or source_class)
-    any_signal_matched = phylum_matched or class_matched
+    any_signal_matched = phylum_matched or class_matched or lineage_matched
     if any_signal_supplied and not any_signal_matched:
         return None, "homonym_source_mismatch"
     return None, "ambiguous_homonym"
@@ -621,6 +644,7 @@ class TaxonResolver:
         self._terminal_fallback = terminal_fallback
         self._require_confident = require_confident
         self._findings: list[str] = []
+        self._lineage_names: frozenset[str] = frozenset()
 
     def _asks_worms(self) -> bool:
         return "worms" in self._registers
@@ -685,6 +709,7 @@ class TaxonResolver:
             source_ranks.get("phylum", ""),
             source_ranks.get("class", ""),
             _source_rank_of(name, source_ranks),
+            self._lineage_names - {_comparable_name(name)},
         )
         if winner is not None:
             self._bump("TAXON_HOMONYM_DISAMBIGUATED")
@@ -825,6 +850,9 @@ class TaxonResolver:
         unranked: Sequence[str] = (),
     ) -> ResolvedTaxon:
         self._findings = []
+        self._lineage_names = frozenset(
+            _comparable_name(name) for name in (*source_ranks.values(), *unranked) if name
+        )
         result = self._resolve(
             terminal_name,
             _with_unranked_kingdom(source_ranks, unranked),
@@ -1017,6 +1045,8 @@ class TaxonResolver:
         if len(confident) == 1:
             return _from_gbif_match(confident[0], resolution_path="leaf")
         if match.match_type == "HIGHERRANK":
+            if _ranks_below_the_query(match, name, source_rank):
+                return None
             result = _from_gbif_match(match, resolution_path="leaf")
             result.gbif_higher_rank_only = True
             return _for_review(result, "gbif_higher_rank_match")
