@@ -1895,18 +1895,21 @@ def _carteria(usage_key: int, **classification) -> dict:
     )
 
 
+CARTERIA_FUNGUS = _carteria(3236261, kingdom="Fungi", phylum="Ascomycota", family="Chaetomiaceae")
+CARTERIA_ALGA = _carteria(
+    2639237,
+    kingdom="Plantae",
+    phylum="Chlorophyta",
+    order="Volvocales",
+    family="Chlamydomonadaceae",
+)
+CARTERIA_AMMONITE = _carteria(3246043, kingdom="Animalia", phylum="Mollusca")
 GBIF_CARTERIA_UNDER_BACTERIA = {
     **GBIF_BACTERIA_AS_HIGHER_RANK,
     "alternatives": [
-        _carteria(3236261, kingdom="Fungi", phylum="Ascomycota", family="Chaetomiaceae"),
-        _carteria(
-            2639237,
-            kingdom="Plantae",
-            phylum="Chlorophyta",
-            order="Volvocales",
-            family="Chlamydomonadaceae",
-        ),
-        _carteria(3246043, kingdom="Animalia", phylum="Mollusca"),
+        CARTERIA_FUNGUS,
+        CARTERIA_ALGA,
+        CARTERIA_AMMONITE,
         _carteria(
             2781870, kingdom="Plantae", phylum="Tracheophyta", status="SYNONYM", synonym=True
         ),
@@ -1922,27 +1925,29 @@ CHLOROPLAST_LINEAGE = (
 )
 
 
+GBIF_CYANOBACTERIA = _gbif_match(
+    usageKey=68, canonicalName="Cyanobacteria", rank="PHYLUM", kingdom="Bacteria"
+)
+
+
+def _ranked(names: tuple[str, ...]) -> dict[str, str]:
+    return dict(zip(("kingdom", "phylum", "class", "order", "family", "genus"), names))
+
+
 @pytest.mark.parametrize(
     ("source_ranks", "unranked"),
-    [
-        (
-            dict(
-                zip(
-                    ("kingdom", "phylum", "class", "order", "family", "genus"), CHLOROPLAST_LINEAGE
-                )
-            ),
-            (),
-        ),
-        ({}, CHLOROPLAST_LINEAGE),
-    ],
+    [(_ranked(CHLOROPLAST_LINEAGE), ()), ({}, CHLOROPLAST_LINEAGE)],
     ids=["ranked", "unranked"],
 )
-def test_a_homonym_tie_is_broken_by_any_name_in_the_source_lineage(source_ranks, unranked):
+def test_gbif_alternatives_from_another_kingdom_never_stand_for_a_chloroplast_read(
+    source_ranks, unranked
+):
     resolver = _gbif_resolver(
         _gbif_by_name(
             {
                 "Carteria cerasiformis": GBIF_BACTERIA_AS_HIGHER_RANK,
                 "Carteria": GBIF_CARTERIA_UNDER_BACTERIA,
+                "Cyanobacteria": GBIF_CYANOBACTERIA,
             }
         ),
         _refuse_worms,
@@ -1950,8 +1955,124 @@ def test_a_homonym_tie_is_broken_by_any_name_in_the_source_lineage(source_ranks,
         registers=("gbif",),
     )
     result = resolver.resolve("Carteria cerasiformis", source_ranks, unranked=unranked)
+    assert result.gbif_usage_key == "68"
+    assert result.resolution_path == "rank_backoff"
+
+
+@pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [
+        (_ranked(("Eukaryota", "Archaeplastida", "Chlorophyta", "Chlorophyceae")), ()),
+        ({}, ("Eukaryota", "Archaeplastida", "Chlorophyta", "Chlorophyceae")),
+    ],
+    ids=["ranked", "unranked"],
+)
+def test_a_homonym_tie_is_broken_by_any_name_in_the_source_lineage(source_ranks, unranked):
+    carteria = {**CARTERIA_FUNGUS, "alternatives": [CARTERIA_ALGA, CARTERIA_AMMONITE]}
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Carteria": carteria}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Carteria", source_ranks, unranked=unranked)
     assert result.gbif_usage_key == "2639237"
     assert result.resolution_path == "homonym_disambiguated"
+    assert result.needs_review is False
+
+
+def test_gbif_alternatives_from_another_kingdom_are_refused():
+    marina_alternatives = [
+        _gbif_match(
+            usageKey=11177191,
+            canonicalName="Marina",
+            rank="FAMILY",
+            kingdom="Animalia",
+            phylum="Chordata",
+        ),
+        _gbif_match(
+            usageKey=2945639,
+            scientificName="Marina Liebm.",
+            canonicalName="Marina",
+            kingdom="Plantae",
+            phylum="Tracheophyta",
+            family="Fabaceae",
+        ),
+    ]
+    thermoactinomycetaceae = _gbif_match(
+        usageKey=4890, canonicalName="Thermoactinomycetaceae", rank="FAMILY", kingdom="Bacteria"
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Marina mesophila": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Marina": {**GBIF_BACTERIA_AS_HIGHER_RANK, "alternatives": marina_alternatives},
+                "Thermoactinomycetaceae": thermoactinomycetaceae,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Marina mesophila",
+        _ranked(
+            (
+                "Bacteria",
+                "Firmicutes",
+                "Bacilli",
+                "Bacillales",
+                "Thermoactinomycetaceae",
+                "Marina",
+            )
+        ),
+    )
+    assert result.gbif_usage_key == "4890"
+    assert result.resolution_path == "rank_backoff"
+    assert "TAXON_REJECTED_KINGDOM" in result.findings
+
+
+def test_a_name_at_two_source_ranks_is_checked_against_the_deeper_one():
+    caldithrix = _gbif_match(
+        usageKey=3219768,
+        scientificName="Caldithrix Miroshnichenko et al., 2003",
+        canonicalName="Caldithrix",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        kingdom="Bacteria",
+        genus="Caldithrix",
+    )
+    caldithrix["alternatives"] = [
+        _gbif_match(
+            usageKey=12244175,
+            scientificName="Caldithrix sp. sp01315",
+            canonicalName="Caldithrix",
+            rank="SPECIES",
+            kingdom="Bacteria",
+            genus="Caldithrix",
+        )
+    ]
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Caldithrix": caldithrix, "Bacteria": GBIF_BACTERIA}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Caldithrix",
+        _ranked(
+            (
+                "Bacteria",
+                "Caldithrix",
+                "Caldithrixae",
+                "Caldithrixales",
+                "Caldithrixaceae",
+                "Caldithrix",
+            )
+        ),
+    )
+    assert result.gbif_usage_key == "3219768"
+    assert result.resolution_path == "leaf"
     assert result.needs_review is False
 
 

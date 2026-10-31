@@ -321,8 +321,8 @@ def _source_rank_of(name: str, source_ranks: Mapping[str, str]) -> str:
     return next(
         (
             rank
-            for rank, value in source_ranks.items()
-            if value and _comparable_name(value) == query
+            for rank in RANKS_FROM_GENUS_UP
+            if source_ranks.get(rank) and _comparable_name(source_ranks[rank]) == query
         ),
         "",
     )
@@ -1011,6 +1011,18 @@ class TaxonResolver:
             return result
         return self._with_worms_lsid(result, name)
 
+    def _plausible_alternatives(
+        self, match: GbifMatch, name: str, source_ranks: dict[str, str]
+    ) -> list[GbifMatch]:
+        plausible = []
+        for alternative in map(GbifMatch.from_raw, match.alternatives):
+            rejection = _rejection_reason(alternative, name, source_ranks)
+            if rejection is None:
+                plausible.append(alternative)
+            elif _comparable_name(alternative.name) == _comparable_name(name):
+                self._bump(rejection)
+        return plausible
+
     def _resolve_gbif_match(
         self,
         gbif: GbifClient,
@@ -1020,7 +1032,7 @@ class TaxonResolver:
         *,
         require_confident: bool,
     ) -> ResolvedTaxon | None:
-        alternatives = [GbifMatch.from_raw(a) for a in match.alternatives]
+        alternatives = self._plausible_alternatives(match, name, source_ranks)
         source_rank = _source_rank_of(name, source_ranks)
         confident = _confident_accepted([match, *alternatives], name, source_rank)
         if len(confident) >= 2:
