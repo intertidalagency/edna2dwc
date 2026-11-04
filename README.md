@@ -98,7 +98,7 @@ This DOI always resolves to the latest release. To cite the version you used, ta
 
 ## Acknowledgements
 
-Built by Intertidal Agency with The Data Patch and DrivenData, with a grant from The Schmidt Family Foundation.
+Developed with a grant from Schmidt Marine Technology Partners, a division of The Schmidt Family Foundation.
 
 The tool relies on the [World Register of Marine Species](https://www.marinespecies.org/), [GBIF](https://www.gbif.org)'s backbone taxonomy and validator, [OBIS](https://obis.org)'s quality checks, [Natural Earth](https://www.naturalearthdata.com/)'s country boundaries, and [TDWG](https://www.tdwg.org/)'s Darwin Core.
 
