@@ -8,11 +8,13 @@ version = "0.1.0"
 description = "Convert eDNA/metabarcoding data into Darwin Core Archives for GBIF and OBIS"
 authors = [
   { name = "Bernard Beckerman", email = "info@drivendata.org" },
-  { name = "Chris Kucharczyk", email = "info@drivendata.org" },
-  { name = "Stephen Formel", email = "info@thedatapatch.com" },
+  { name = "Rachael Blake" },
   { name = "Peter Bull", email = "info@drivendata.org" },
-  { name = "Intertidal Agency" },
+  { name = "Stephen Formel", email = "info@thedatapatch.com" },
+  { name = "Chris Kucharczyk", email = "info@drivendata.org" },
+  { name = "Kate Wing" },
   { name = "DrivenData", email = "info@drivendata.org" },
+  { name = "Intertidal Agency" },
   { name = "The Data Patch", email = "info@thedatapatch.com" },
 ]
 readme = "README.md"
