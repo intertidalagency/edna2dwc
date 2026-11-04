@@ -92,7 +92,9 @@ MIT. See [`LICENSE`](LICENSE). The term lists, country boundaries and schemas th
 
 ## Citing
 
-A citation for `edna2dwc` will be added here.
+Beckerman, B., Blake, R., Bull, P., Formel, S., Kucharczyk, C., & Wing, K. edna2dwc: convert eDNA and metabarcoding data into Darwin Core Archives. Zenodo. https://doi.org/10.5281/zenodo.23956827
+
+This DOI always resolves to the latest release. To cite the version you used, take its DOI and year from the [Zenodo record](https://doi.org/10.5281/zenodo.23956827).
 
 ## Acknowledgements
 
