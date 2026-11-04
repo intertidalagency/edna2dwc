@@ -1,5 +1,7 @@
 # edna2dwc
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23956827.svg)](https://doi.org/10.5281/zenodo.23956827)
+
 `edna2dwc` turns eDNA and metabarcoding results into a Darwin Core Archive (DwC-A) to publish on [GBIF](https://www.gbif.org) and [OBIS](https://obis.org). It reads Excel workbooks, QIIME 2 artifacts, BIOM tables, phyloseq objects, CSVs and other formats.
 
 It is for a scientist who has a spreadsheet of results and a methods write-up, and wants to publish them. You answer questions about your dataset in one file, `answers.yaml`. An AI coding agent, such as Claude Code or Codex, writes the script that reads your files and runs the commands. Every command also runs by hand.
