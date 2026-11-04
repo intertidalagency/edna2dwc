@@ -1,0 +1,49 @@
+{
+  "upload_type": "software",
+  "title": "edna2dwc: convert eDNA and metabarcoding data into Darwin Core Archives",
+  "description": "<p><code>edna2dwc</code> converts eDNA and metabarcoding data into Darwin Core Archives for GBIF and OBIS. It ships as a Python command-line tool and an AI agent skill, <code>convert-edna-to-dwc</code>. Each conversion writes the archive alongside a bundle that replays it.</p>",
+  "creators": [
+    {
+      "name": "Beckerman, Bernard",
+      "affiliation": "DrivenData",
+      "orcid": "0009-0007-2281-3052"
+    },
+    {
+      "name": "Blake, Rachael",
+      "affiliation": "Intertidal Agency",
+      "orcid": "0000-0003-0847-9100"
+    },
+    {
+      "name": "Bull, Peter",
+      "affiliation": "DrivenData",
+      "orcid": "0000-0001-5709-8799"
+    },
+    {
+      "name": "Formel, Stephen",
+      "affiliation": "The Data Patch",
+      "orcid": "0000-0001-7418-1244"
+    },
+    {
+      "name": "Kucharczyk, Chris",
+      "affiliation": "DrivenData",
+      "orcid": "0000-0002-4712-839X"
+    },
+    {
+      "name": "Wing, Kate",
+      "affiliation": "Intertidal Agency",
+      "orcid": "0009-0001-0904-2886"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "eDNA",
+    "metabarcoding",
+    "Darwin Core",
+    "Darwin Core Archive",
+    "GBIF",
+    "OBIS",
+    "biodiversity"
+  ],
+  "notes": "Built by Intertidal Agency with The Data Patch and DrivenData, with a grant from The Schmidt Family Foundation."
+}
