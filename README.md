@@ -92,11 +92,13 @@ MIT. See [`LICENSE`](LICENSE). The term lists, country boundaries and schemas th
 
 ## Citing
 
-A citation for `edna2dwc` will be added here.
+Beckerman, B., Blake, R., Bull, P., Formel, S., Kucharczyk, C., & Wing, K. edna2dwc: convert eDNA and metabarcoding data into Darwin Core Archives. Zenodo. <https://doi.org/10.5281/zenodo.23956827>
+
+This DOI always resolves to the latest release. To cite the version you used, take its DOI and year from the [Zenodo record](https://doi.org/10.5281/zenodo.23956827).
 
 ## Acknowledgements
 
-Built by Intertidal Agency with The Data Patch and DrivenData, with a grant from The Schmidt Family Foundation.
+Developed with a grant from Schmidt Marine Technology Partners, a division of The Schmidt Family Foundation.
 
 The tool relies on the [World Register of Marine Species](https://www.marinespecies.org/), [GBIF](https://www.gbif.org)'s backbone taxonomy and validator, [OBIS](https://obis.org)'s quality checks, [Natural Earth](https://www.naturalearthdata.com/)'s country boundaries, and [TDWG](https://www.tdwg.org/)'s Darwin Core.
 
