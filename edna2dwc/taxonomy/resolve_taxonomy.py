@@ -43,6 +43,7 @@ from edna2dwc.taxonomy.worms import (
 )
 
 RANKS_FROM_GENUS_UP = tuple(reversed(RANK_COLUMNS))
+SPECIES_LEVEL_RANKS = frozenset({"species", "subspecies", "variety", "form", "forma"})
 MASS_COLLAPSE_MIN_NAMES = 5
 
 STAGE = "resolve-taxonomy"
@@ -99,6 +100,7 @@ class ResolvedTaxon:
     provenance: str = ""
     confirmed: str = ""
     gbif_usage_key: str = ""
+    gbif_higher_rank_only: bool = False
     findings: list[str] = field(default_factory=list)
     settings: str = ""
 
@@ -200,14 +202,39 @@ def _comparable_name(name: str) -> str:
 _Candidate = TypeVar("_Candidate", AphiaRecord, GbifMatch)
 
 
-def _is_confident(candidate: AphiaRecord | GbifMatch, query: str) -> bool:
-    return candidate.is_confident_match_type and _comparable_name(
-        candidate.name
-    ) == _comparable_name(query)
+def _rank_depth(rank: str) -> int | None:
+    rank = rank.casefold()
+    if rank in RANK_COLUMNS:
+        return RANK_COLUMNS.index(rank)
+    if rank in SPECIES_LEVEL_RANKS:
+        return len(RANK_COLUMNS)
+    return None
 
 
-def _confident_accepted(candidates: Iterable[_Candidate], query: str) -> list[_Candidate]:
-    return [c for c in candidates if _is_confident(c, query) and c.is_accepted]
+def _ranks_below_the_query(
+    candidate: AphiaRecord | GbifMatch, query: str, source_rank: str
+) -> bool:
+    depth = _rank_depth(candidate.rank)
+    if not isinstance(candidate, GbifMatch) or depth is None:
+        return False
+    if source_rank in RANK_COLUMNS and depth > RANK_COLUMNS.index(source_rank):
+        return True
+    return depth == len(RANK_COLUMNS) and " " not in _comparable_name(query)
+
+
+def _is_confident(candidate: AphiaRecord | GbifMatch, query: str, source_rank: str = "") -> bool:
+    names_the_query = _comparable_name(candidate.name) == _comparable_name(query)
+    return (
+        names_the_query
+        and (candidate.is_confident_match_type or candidate.match_type == "HIGHERRANK")
+        and not _ranks_below_the_query(candidate, query, source_rank)
+    )
+
+
+def _confident_accepted(
+    candidates: Iterable[_Candidate], query: str, source_rank: str = ""
+) -> list[_Candidate]:
+    return [c for c in candidates if _is_confident(c, query, source_rank) and c.is_accepted]
 
 
 def _rejection_reason(
@@ -289,15 +316,45 @@ def _for_review(result: ResolvedTaxon, review_reason: str) -> ResolvedTaxon:
     return result
 
 
+def _source_rank_of(name: str, source_ranks: Mapping[str, str]) -> str:
+    query = _comparable_name(name)
+    return next(
+        (
+            rank
+            for rank in RANKS_FROM_GENUS_UP
+            if source_ranks.get(rank) and _comparable_name(source_ranks[rank]) == query
+        ),
+        "",
+    )
+
+
+def _candidate_classification(candidate: AphiaRecord | GbifMatch) -> set[str]:
+    names = (
+        candidate.kingdom,
+        candidate.phylum,
+        candidate.class_,
+        candidate.order,
+        candidate.family,
+        candidate.genus,
+    )
+    return {_comparable_name(name) for name in names if name}
+
+
 def _homonym_tiebreak(
-    candidates: list[_Candidate], source_phylum: str, source_class: str
+    candidates: list[_Candidate],
+    source_phylum: str,
+    source_class: str,
+    source_rank: str = "",
+    lineage_names: frozenset[str] = frozenset(),
 ) -> tuple[_Candidate | None, str]:
     if len(candidates) < 2:
         raise HomonymTiebreakError(
             f"_homonym_tiebreak needs >=2 candidates, got {len(candidates)}"
         )
 
-    surviving = candidates
+    surviving = [c for c in candidates if c.rank.casefold() == source_rank] or candidates
+    if len(surviving) == 1:
+        return surviving[0], "homonym_disambiguated"
     phylum_matched = False
     class_matched = False
 
@@ -313,11 +370,18 @@ def _homonym_tiebreak(
             surviving = class_agreeing
             class_matched = True
 
+    lineage_matched = False
+    if len(surviving) > 1 and lineage_names:
+        lineage_agreeing = [c for c in surviving if _candidate_classification(c) & lineage_names]
+        if lineage_agreeing:
+            surviving = lineage_agreeing
+            lineage_matched = True
+
     if len(surviving) == 1:
         return surviving[0], "homonym_disambiguated"
 
     any_signal_supplied = bool(source_phylum or source_class)
-    any_signal_matched = phylum_matched or class_matched
+    any_signal_matched = phylum_matched or class_matched or lineage_matched
     if any_signal_supplied and not any_signal_matched:
         return None, "homonym_source_mismatch"
     return None, "ambiguous_homonym"
@@ -336,6 +400,31 @@ def _expand_compound_parts(name: str) -> list[str]:
             if len(tokens) >= 2:
                 last_genus = tokens[0]
     return expanded
+
+
+def _classification(result: ResolvedTaxon) -> set[str]:
+    names = (
+        result.kingdom,
+        result.phylum,
+        result.class_,
+        result.order,
+        result.family,
+        result.genus,
+    )
+    return {name.casefold() for name in names if name}
+
+
+def _sits_above(ancestor: ResolvedTaxon, result: ResolvedTaxon) -> bool:
+    name = ancestor.scientific_name.casefold()
+    return name != result.scientific_name.casefold() and name in _classification(result)
+
+
+def _beats_higher_rank_match(backed_off: ResolvedTaxon | None, higher_rank: ResolvedTaxon) -> bool:
+    return (
+        backed_off is not None
+        and not backed_off.gbif_higher_rank_only
+        and not _sits_above(backed_off, higher_rank)
+    )
 
 
 def _flag_for_review(result: ResolvedTaxon, reason: str) -> None:
@@ -555,6 +644,7 @@ class TaxonResolver:
         self._terminal_fallback = terminal_fallback
         self._require_confident = require_confident
         self._findings: list[str] = []
+        self._lineage_names: frozenset[str] = frozenset()
 
     def _asks_worms(self) -> bool:
         return "worms" in self._registers
@@ -612,10 +702,14 @@ class TaxonResolver:
         return plausible
 
     def _break_homonym_tie(
-        self, confident: list[_Candidate], source_ranks: dict[str, str]
+        self, confident: list[_Candidate], name: str, source_ranks: dict[str, str]
     ) -> ResolvedTaxon:
         winner, reason = _homonym_tiebreak(
-            confident, source_ranks.get("phylum", ""), source_ranks.get("class", "")
+            confident,
+            source_ranks.get("phylum", ""),
+            source_ranks.get("class", ""),
+            _source_rank_of(name, source_ranks),
+            self._lineage_names - {_comparable_name(name)},
         )
         if winner is not None:
             self._bump("TAXON_HOMONYM_DISAMBIGUATED")
@@ -626,11 +720,16 @@ class TaxonResolver:
         return result
 
     def _kept_despite_doubt(
-        self, candidate: AphiaRecord | GbifMatch, name: str, *, require_confident: bool
+        self,
+        candidate: AphiaRecord | GbifMatch,
+        name: str,
+        source_rank: str,
+        *,
+        require_confident: bool,
     ) -> ResolvedTaxon | None:
         reasons = []
-        if not _is_confident(candidate, name):
-            if require_confident:
+        if not _is_confident(candidate, name, source_rank):
+            if require_confident or _ranks_below_the_query(candidate, name, source_rank):
                 self._bump("TAXON_FUZZY_REJECTED")
                 return None
             reasons.append(
@@ -648,14 +747,15 @@ class TaxonResolver:
         self, name: str, source_ranks: dict[str, str], *, require_confident: bool
     ) -> ResolvedTaxon | None:
         plausible = self._plausible(self._worms.match_one(name), name, source_ranks)
-        confident = _confident_accepted(plausible, name)
+        source_rank = _source_rank_of(name, source_ranks)
+        confident = _confident_accepted(plausible, name, source_rank)
         if len(confident) >= 2:
-            return self._break_homonym_tie(confident, source_ranks)
+            return self._break_homonym_tie(confident, name, source_ranks)
         if len(confident) == 1:
             return _from_worms_record(confident[0], resolution_path="leaf")
         if len(plausible) == 1:
             return self._kept_despite_doubt(
-                plausible[0], name, require_confident=require_confident
+                plausible[0], name, source_rank, require_confident=require_confident
             )
         return None
 
@@ -750,6 +850,9 @@ class TaxonResolver:
         unranked: Sequence[str] = (),
     ) -> ResolvedTaxon:
         self._findings = []
+        self._lineage_names = frozenset(
+            _comparable_name(name) for name in (*source_ranks.values(), *unranked) if name
+        )
         result = self._resolve(
             terminal_name,
             _with_unranked_kingdom(source_ranks, unranked),
@@ -841,13 +944,16 @@ class TaxonResolver:
         if resolved is not None:
             if resolved.resolution_path == "leaf" and resolved.authority != self._registers[0]:
                 resolved.resolution_path = f"{resolved.authority}_fallback"
-            return resolved
+            if not resolved.gbif_higher_rank_only:
+                return resolved
 
-        resolved = self._resolve_by_rank_backoff(
+        backed_off = self._resolve_by_rank_backoff(
             source_ranks, unranked, require_confident=require_confident
         )
-        if resolved is not None:
+        if resolved is not None and not _beats_higher_rank_match(backed_off, resolved):
             return resolved
+        if backed_off is not None:
+            return backed_off
 
         self._bump("TAXON_UNRESOLVED")
         return self._terminal()
@@ -859,27 +965,35 @@ class TaxonResolver:
         *,
         require_confident: bool,
     ) -> ResolvedTaxon | None:
+        higher_rank_match = None
         for name in _backoff_names(source_ranks, unranked):
             resolved = self._resolve_at_registers(
                 name, source_ranks, require_confident=require_confident
             )
-            if resolved is not None:
-                if resolved.resolution_path == "leaf":
-                    resolved.resolution_path = "rank_backoff"
+            if resolved is None:
+                continue
+            if resolved.resolution_path == "leaf":
+                resolved.resolution_path = "rank_backoff"
+            if not resolved.gbif_higher_rank_only:
                 return resolved
-        return None
+            higher_rank_match = higher_rank_match or resolved
+        return higher_rank_match
 
     def _resolve_at_registers(
         self, name: str, source_ranks: dict[str, str], *, require_confident: bool
     ) -> ResolvedTaxon | None:
         if not _is_sendable(name):
             return None
+        higher_rank_match = None
         for register in self._registers:
             resolve_at = self._resolve_at_worms if register == "worms" else self._resolve_at_gbif
             resolved = resolve_at(name, source_ranks, require_confident=require_confident)
-            if resolved is not None:
+            if resolved is None:
+                continue
+            if not resolved.gbif_higher_rank_only:
                 return resolved
-        return None
+            higher_rank_match = higher_rank_match or resolved
+        return higher_rank_match
 
     def _resolve_at_gbif(
         self, name: str, source_ranks: dict[str, str], *, require_confident: bool
@@ -897,6 +1011,18 @@ class TaxonResolver:
             return result
         return self._with_worms_lsid(result, name)
 
+    def _plausible_alternatives(
+        self, match: GbifMatch, name: str, source_ranks: dict[str, str]
+    ) -> list[GbifMatch]:
+        plausible = []
+        for alternative in map(GbifMatch.from_raw, match.alternatives):
+            rejection = _rejection_reason(alternative, name, source_ranks)
+            if rejection is None:
+                plausible.append(alternative)
+            elif _comparable_name(alternative.name) == _comparable_name(name):
+                self._bump(rejection)
+        return plausible
+
     def _resolve_gbif_match(
         self,
         gbif: GbifClient,
@@ -906,14 +1032,15 @@ class TaxonResolver:
         *,
         require_confident: bool,
     ) -> ResolvedTaxon | None:
-        alternatives = [GbifMatch.from_raw(a) for a in match.alternatives]
-        confident = _confident_accepted([match, *alternatives], name)
+        alternatives = self._plausible_alternatives(match, name, source_ranks)
+        source_rank = _source_rank_of(name, source_ranks)
+        confident = _confident_accepted([match, *alternatives], name, source_rank)
         if len(confident) >= 2:
-            return self._break_homonym_tie(confident, source_ranks)
-        if _is_confident(match, name) and match.is_accepted:
+            return self._break_homonym_tie(confident, name, source_ranks)
+        if _is_confident(match, name, source_rank) and match.is_accepted:
             return _from_gbif_match(match, resolution_path="leaf")
         if (
-            _is_confident(match, name)
+            _is_confident(match, name, source_rank)
             and match.status == "SYNONYM"
             and match.accepted_usage_key is not None
         ):
@@ -927,11 +1054,17 @@ class TaxonResolver:
                 _from_gbif_species_record(accepted, resolution_path="leaf"),
                 "gbif_synonym_resolved_to_accepted",
             )
+        if len(confident) == 1:
+            return _from_gbif_match(confident[0], resolution_path="leaf")
         if match.match_type == "HIGHERRANK":
-            return _for_review(
-                _from_gbif_match(match, resolution_path="leaf"), "gbif_higher_rank_match"
-            )
-        return self._kept_despite_doubt(match, name, require_confident=require_confident)
+            if _ranks_below_the_query(match, name, source_rank):
+                return None
+            result = _from_gbif_match(match, resolution_path="leaf")
+            result.gbif_higher_rank_only = True
+            return _for_review(result, "gbif_higher_rank_match")
+        return self._kept_despite_doubt(
+            match, name, source_rank, require_confident=require_confident
+        )
 
     def _with_worms_lsid(self, result: ResolvedTaxon, name: str) -> ResolvedTaxon:
         lsid_name = result.scientific_name or name

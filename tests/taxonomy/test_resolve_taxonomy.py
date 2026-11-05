@@ -679,6 +679,151 @@ def test_gbif_ambiguous_homonym_never_guesses():
     assert _codes(result) == ["TAXON_AMBIGUOUS_HOMONYM"]
 
 
+@pytest.mark.parametrize(
+    "placeholder", ["Mesonia sp012964435", "Mesonia sp. sp012964435"], ids=["sp", "sp_dot_sp"]
+)
+def test_a_gbif_placeholder_species_is_not_a_homonym_of_its_genus(placeholder):
+    genus = _gbif_match(
+        usageKey=3228676,
+        scientificName="Mesonia Nedashkovskaya et al., 2003",
+        canonicalName="Mesonia",
+        kingdom="Bacteria",
+        genus="Mesonia",
+    )
+    genus["alternatives"] = [
+        _gbif_match(
+            usageKey=12197467,
+            scientificName=placeholder,
+            canonicalName="Mesonia",
+            rank="SPECIES",
+            kingdom="Bacteria",
+            genus="Mesonia",
+        )
+    ]
+    resolver = _gbif_resolver(
+        lambda request: httpx.Response(200, json=genus),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Mesonia", {"kingdom": "Bacteria", "genus": "Mesonia"})
+    assert result.gbif_usage_key == "3228676"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
+    assert result.candidate_ids == ""
+
+
+GBIF_PAENIBACILLUS_GENUS = _gbif_match(
+    usageKey=3227538,
+    scientificName="Paenibacillus Ash et al., 1994",
+    canonicalName="Paenibacillus",
+    kingdom="Bacteria",
+    family="Paenibacillaceae",
+    genus="Paenibacillus",
+)
+
+
+def _paenibacillus_resolver(top: dict) -> TaxonResolver:
+    match = {**top, "alternatives": [GBIF_PAENIBACILLUS_GENUS]}
+    return _gbif_resolver(
+        lambda request: httpx.Response(200, json=match),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+
+
+PAENIBACILLUS_LINEAGES = pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [
+        ({"kingdom": "Bacteria", "family": "Paenibacillaceae", "genus": "Paenibacillus"}, ()),
+        ({}, ("Bacteria", "Firmicutes", "Paenibacillaceae", "Paenibacillus")),
+    ],
+    ids=["ranked", "unranked"],
+)
+
+
+@PAENIBACILLUS_LINEAGES
+def test_a_gtdb_placeholder_species_never_stands_for_its_genus(source_ranks, unranked):
+    placeholder = _gbif_match(
+        usageKey=12238403,
+        scientificName="Paenibacillus_K guangzhouensis",
+        canonicalName="Paenibacillus",
+        rank="SPECIES",
+        kingdom="Bacteria",
+        genus="Paenibacillus",
+    )
+    result = _paenibacillus_resolver(placeholder).resolve(
+        "Paenibacillus", source_ranks, unranked=unranked
+    )
+    assert result.gbif_usage_key == "3227538"
+    assert result.taxon_rank == "GENUS"
+    assert result.needs_review is False
+    assert result.candidate_ids == ""
+
+
+@PAENIBACILLUS_LINEAGES
+def test_a_species_rank_match_never_stands_for_a_one_word_name(source_ranks, unranked):
+    species_named_like_its_genus = _gbif_match(
+        usageKey=12238404,
+        scientificName="Paenibacillus",
+        canonicalName="Paenibacillus",
+        rank="SPECIES",
+        kingdom="Bacteria",
+        genus="Paenibacillus",
+    )
+    result = _paenibacillus_resolver(species_named_like_its_genus).resolve(
+        "Paenibacillus", source_ranks, unranked=unranked
+    )
+    assert result.gbif_usage_key == "3227538"
+    assert result.taxon_rank == "GENUS"
+    assert result.needs_review is False
+
+
+def test_a_match_below_the_rank_the_source_gives_the_name_is_refused():
+    genus_named_like_a_family = _gbif_match(
+        usageKey=70, canonicalName="Oddaceae", rank="GENUS", kingdom="Bacteria"
+    )
+    order = _gbif_match(usageKey=71, canonicalName="Oddales", rank="ORDER", kingdom="Bacteria")
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Oddaceae": genus_named_like_a_family, "Oddales": order}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Oddaceae", {"kingdom": "Bacteria", "order": "Oddales", "family": "Oddaceae"}
+    )
+    assert result.gbif_usage_key == "71"
+    assert result.resolution_path == "rank_backoff"
+
+
+def test_a_gbif_candidate_below_the_rank_the_source_gives_the_name_is_no_homonym():
+    kingdom = _gbif_match(usageKey=3, canonicalName="Bacteria", rank="KINGDOM", kingdom="Bacteria")
+    kingdom["alternatives"] = [
+        _gbif_match(
+            usageKey=1411344,
+            scientificName="Bacteria Berthold, 1827",
+            canonicalName="Bacteria",
+            rank="GENUS",
+            kingdom="Animalia",
+            phylum="Arthropoda",
+            genus="Bacteria",
+        )
+    ]
+    resolver = _gbif_resolver(
+        lambda request: httpx.Response(200, json=kingdom),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Bacteria", {"kingdom": "Bacteria"})
+    assert result.gbif_usage_key == "3"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
+    assert result.candidate_ids == ""
+
+
 def test_gbif_homonym_source_mismatch_when_neither_candidate_agrees():
     result = _gbif_resolver(_gbif_homonyms(DIATOM, MOLLUSC)).resolve(
         "Homonymus", {"kingdom": "Unknownia", "phylum": "Nope"}
@@ -1502,6 +1647,433 @@ def test_a_rank_backoff_that_gbif_resolves_is_labelled_rank_backoff():
     assert result.scientific_name == "Aaptos"
     assert result.authority == "gbif"
     assert result.resolution_path == "rank_backoff"
+
+
+GBIF_BACTERIA = _gbif_match(
+    usageKey=3, canonicalName="Bacteria", rank="KINGDOM", kingdom="Bacteria"
+)
+GBIF_BACTERIA_AS_HIGHER_RANK = {**GBIF_BACTERIA, "matchType": "HIGHERRANK", "confidence": 90}
+GBIF_PROTEOBACTERIA = _gbif_match(
+    usageKey=11,
+    canonicalName="Proteobacteria",
+    rank="PHYLUM",
+    kingdom="Bacteria",
+    phylum="Proteobacteria",
+)
+GBIF_VERRUCOMICROBIA_SYNONYM = _gbif_match(
+    usageKey=7,
+    canonicalName="Verrucomicrobia",
+    rank="PHYLUM",
+    status="SYNONYM",
+    synonym=True,
+    acceptedUsageKey=8,
+    kingdom="Bacteria",
+    phylum="Verrucomicrobiota",
+)
+GBIF_VERRUCOMICROBIOTA_RECORD = {
+    "key": 8,
+    "canonicalName": "Verrucomicrobiota",
+    "rank": "PHYLUM",
+    "taxonomicStatus": "ACCEPTED",
+    "kingdom": "Bacteria",
+    "phylum": "Verrucomicrobiota",
+}
+
+
+def _gbif_by_name(matches: dict[str, dict], records: dict[int, dict] | None = None):
+    def handler(request):
+        for key, record in (records or {}).items():
+            if request.url.path.endswith(f"/species/{key}"):
+                return httpx.Response(200, json=record)
+        name = request.url.params.get("name")
+        return httpx.Response(200, json=matches.get(name, {"matchType": "NONE"}))
+
+    return handler
+
+
+def test_a_gbif_higher_rank_match_on_the_leaf_backs_off_to_a_confident_ancestor():
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Proteobacteria": GBIF_PROTEOBACTERIA,
+                "Bacteria": GBIF_BACTERIA,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Deltaproteobacteria",
+        {"kingdom": "Bacteria", "phylum": "Proteobacteria", "class": "Deltaproteobacteria"},
+    )
+    assert result.scientific_name == "Proteobacteria"
+    assert result.taxon_rank == "PHYLUM"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+    assert result.review_reason == ""
+
+
+def test_higher_rank_matches_on_ancestors_keep_backing_off_to_a_synonym_ancestor():
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Pedosphaerales": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Pedosphaerae": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Verrucomicrobia": GBIF_VERRUCOMICROBIA_SYNONYM,
+                "Bacteria": GBIF_BACTERIA,
+            },
+            {8: GBIF_VERRUCOMICROBIOTA_RECORD},
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Pedosphaerales",
+        {
+            "kingdom": "Bacteria",
+            "phylum": "Verrucomicrobia",
+            "class": "Pedosphaerae",
+            "order": "Pedosphaerales",
+        },
+    )
+    assert result.scientific_name == "Verrucomicrobiota"
+    assert result.resolution_path == "rank_backoff"
+    assert result.review_reason == "gbif_synonym_resolved_to_accepted"
+
+
+def test_a_gbif_higher_rank_match_stands_when_no_ancestor_resolves():
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Deltaproteobacteria",
+        {"kingdom": "Bacteria", "phylum": "Unknownia", "class": "Deltaproteobacteria"},
+    )
+    assert result.scientific_name == "Bacteria"
+    assert result.resolution_path == "leaf"
+    assert result.review_reason == "gbif_higher_rank_match"
+
+
+def test_a_gbif_higher_rank_match_below_every_resolved_ancestor_stands():
+    higher_rank_genus = _gbif_match(
+        usageKey=50,
+        canonicalName="Pelagibacter",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        kingdom="Bacteria",
+        phylum="Proteobacteria",
+        genus="Pelagibacter",
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {"Pelagibacter ubique": higher_rank_genus, "Proteobacteria": GBIF_PROTEOBACTERIA}
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Pelagibacter ubique", {"kingdom": "Bacteria", "phylum": "Proteobacteria"}
+    )
+    assert result.scientific_name == "Pelagibacter"
+    assert result.resolution_path == "leaf"
+    assert result.review_reason == "gbif_higher_rank_match"
+
+
+GBIF_PREVOTELLA_AS_HIGHER_RANK = _gbif_match(
+    usageKey=60,
+    scientificName="Prevotella Shah & Collins, 1990",
+    canonicalName="Prevotella",
+    rank="GENUS",
+    matchType="HIGHERRANK",
+    kingdom="Bacteria",
+    phylum="Bacteroidota",
+    family="Prevotellaceae",
+    genus="Prevotella",
+)
+GBIF_PREVOTELLACEAE = _gbif_match(
+    usageKey=61,
+    canonicalName="Prevotellaceae",
+    rank="FAMILY",
+    kingdom="Bacteria",
+    phylum="Bacteroidota",
+    family="Prevotellaceae",
+)
+PREVOTELLA_LINEAGE = {"kingdom": "Bacteria", "family": "Prevotellaceae", "genus": "Prevotella"}
+
+
+def _prevotella_resolver() -> TaxonResolver:
+    return _gbif_resolver(
+        _gbif_by_name(
+            {"Prevotella": GBIF_PREVOTELLA_AS_HIGHER_RANK, "Prevotellaceae": GBIF_PREVOTELLACEAE}
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+
+
+def test_a_gbif_higher_rank_match_naming_the_queried_taxon_is_a_confident_match():
+    result = _prevotella_resolver().resolve("Prevotella", PREVOTELLA_LINEAGE)
+    assert result.scientific_name == "Prevotella"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
+    assert result.review_reason == ""
+
+
+def test_rank_backoff_stops_at_a_higher_rank_match_naming_the_queried_genus():
+    result = _prevotella_resolver().resolve("Prevotella copri", PREVOTELLA_LINEAGE)
+    assert result.scientific_name == "Prevotella"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+
+
+def test_a_gbif_higher_rank_match_below_the_source_rank_of_the_name_is_refused():
+    saprospira = _gbif_match(
+        usageKey=3228791,
+        scientificName="Saprospira Gross, 1911",
+        canonicalName="Saprospira",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        confidence=80,
+        kingdom="Bacteria",
+        phylum="Bacteroidota",
+        genus="Saprospira",
+    )
+    bacteroidota = _gbif_match(
+        usageKey=1853, canonicalName="Bacteroidota", rank="PHYLUM", kingdom="Bacteria"
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Saprospirae": saprospira, "Bacteroidota": bacteroidota}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Saprospirae", {"kingdom": "Bacteria", "phylum": "Bacteroidota", "class": "Saprospirae"}
+    )
+    assert result.gbif_usage_key == "1853"
+    assert result.resolution_path == "rank_backoff"
+    assert result.needs_review is False
+
+
+def test_a_gbif_higher_rank_match_lets_the_next_register_try_the_same_name():
+    worms = _worms_transport(
+        {
+            "Deltaproteobacteria": [
+                _record(
+                    AphiaID=391,
+                    scientificname="Deltaproteobacteria",
+                    rank="Class",
+                    kingdom="Bacteria",
+                    phylum="Proteobacteria",
+                    **{"class": "Deltaproteobacteria"},
+                )
+            ]
+        }
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Deltaproteobacteria": GBIF_BACTERIA_AS_HIGHER_RANK}),
+        worms,
+        require_confident=True,
+        registers=("gbif", "worms"),
+    )
+    result = resolver.resolve("Deltaproteobacteria", {"kingdom": "Bacteria"})
+    assert result.scientific_name == "Deltaproteobacteria"
+    assert result.authority == "worms"
+
+
+def _carteria(usage_key: int, **classification) -> dict:
+    return _gbif_match(
+        usageKey=usage_key, canonicalName="Carteria", confidence=90, **classification
+    )
+
+
+CARTERIA_FUNGUS = _carteria(3236261, kingdom="Fungi", phylum="Ascomycota", family="Chaetomiaceae")
+CARTERIA_ALGA = _carteria(
+    2639237,
+    kingdom="Plantae",
+    phylum="Chlorophyta",
+    order="Volvocales",
+    family="Chlamydomonadaceae",
+)
+CARTERIA_AMMONITE = _carteria(3246043, kingdom="Animalia", phylum="Mollusca")
+GBIF_CARTERIA_UNDER_BACTERIA = {
+    **GBIF_BACTERIA_AS_HIGHER_RANK,
+    "alternatives": [
+        CARTERIA_FUNGUS,
+        CARTERIA_ALGA,
+        CARTERIA_AMMONITE,
+        _carteria(
+            2781870, kingdom="Plantae", phylum="Tracheophyta", status="SYNONYM", synonym=True
+        ),
+    ],
+}
+CHLOROPLAST_LINEAGE = (
+    "Bacteria",
+    "Cyanobacteria",
+    "Chloroplast",
+    "Chlorophyta",
+    "Chlamydomonadaceae",
+    "Carteria",
+)
+
+
+GBIF_CYANOBACTERIA = _gbif_match(
+    usageKey=68, canonicalName="Cyanobacteria", rank="PHYLUM", kingdom="Bacteria"
+)
+
+
+def _ranked(names: tuple[str, ...]) -> dict[str, str]:
+    return dict(zip(("kingdom", "phylum", "class", "order", "family", "genus"), names))
+
+
+@pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [(_ranked(CHLOROPLAST_LINEAGE), ()), ({}, CHLOROPLAST_LINEAGE)],
+    ids=["ranked", "unranked"],
+)
+def test_gbif_alternatives_from_another_kingdom_never_stand_for_a_chloroplast_read(
+    source_ranks, unranked
+):
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Carteria cerasiformis": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Carteria": GBIF_CARTERIA_UNDER_BACTERIA,
+                "Cyanobacteria": GBIF_CYANOBACTERIA,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Carteria cerasiformis", source_ranks, unranked=unranked)
+    assert result.gbif_usage_key == "68"
+    assert result.resolution_path == "rank_backoff"
+
+
+@pytest.mark.parametrize(
+    ("source_ranks", "unranked"),
+    [
+        (_ranked(("Eukaryota", "Archaeplastida", "Chlorophyta", "Chlorophyceae")), ()),
+        ({}, ("Eukaryota", "Archaeplastida", "Chlorophyta", "Chlorophyceae")),
+    ],
+    ids=["ranked", "unranked"],
+)
+def test_a_homonym_tie_is_broken_by_any_name_in_the_source_lineage(source_ranks, unranked):
+    carteria = {**CARTERIA_FUNGUS, "alternatives": [CARTERIA_ALGA, CARTERIA_AMMONITE]}
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Carteria": carteria}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve("Carteria", source_ranks, unranked=unranked)
+    assert result.gbif_usage_key == "2639237"
+    assert result.resolution_path == "homonym_disambiguated"
+    assert result.needs_review is False
+
+
+def test_gbif_alternatives_from_another_kingdom_are_refused():
+    marina_alternatives = [
+        _gbif_match(
+            usageKey=11177191,
+            canonicalName="Marina",
+            rank="FAMILY",
+            kingdom="Animalia",
+            phylum="Chordata",
+        ),
+        _gbif_match(
+            usageKey=2945639,
+            scientificName="Marina Liebm.",
+            canonicalName="Marina",
+            kingdom="Plantae",
+            phylum="Tracheophyta",
+            family="Fabaceae",
+        ),
+    ]
+    thermoactinomycetaceae = _gbif_match(
+        usageKey=4890, canonicalName="Thermoactinomycetaceae", rank="FAMILY", kingdom="Bacteria"
+    )
+    resolver = _gbif_resolver(
+        _gbif_by_name(
+            {
+                "Marina mesophila": GBIF_BACTERIA_AS_HIGHER_RANK,
+                "Marina": {**GBIF_BACTERIA_AS_HIGHER_RANK, "alternatives": marina_alternatives},
+                "Thermoactinomycetaceae": thermoactinomycetaceae,
+            }
+        ),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Marina mesophila",
+        _ranked(
+            (
+                "Bacteria",
+                "Firmicutes",
+                "Bacilli",
+                "Bacillales",
+                "Thermoactinomycetaceae",
+                "Marina",
+            )
+        ),
+    )
+    assert result.gbif_usage_key == "4890"
+    assert result.resolution_path == "rank_backoff"
+    assert "TAXON_REJECTED_KINGDOM" in result.findings
+
+
+def test_a_name_at_two_source_ranks_is_checked_against_the_deeper_one():
+    caldithrix = _gbif_match(
+        usageKey=3219768,
+        scientificName="Caldithrix Miroshnichenko et al., 2003",
+        canonicalName="Caldithrix",
+        rank="GENUS",
+        matchType="HIGHERRANK",
+        kingdom="Bacteria",
+        genus="Caldithrix",
+    )
+    caldithrix["alternatives"] = [
+        _gbif_match(
+            usageKey=12244175,
+            scientificName="Caldithrix sp. sp01315",
+            canonicalName="Caldithrix",
+            rank="SPECIES",
+            kingdom="Bacteria",
+            genus="Caldithrix",
+        )
+    ]
+    resolver = _gbif_resolver(
+        _gbif_by_name({"Caldithrix": caldithrix, "Bacteria": GBIF_BACTERIA}),
+        _refuse_worms,
+        require_confident=True,
+        registers=("gbif",),
+    )
+    result = resolver.resolve(
+        "Caldithrix",
+        _ranked(
+            (
+                "Bacteria",
+                "Caldithrix",
+                "Caldithrixae",
+                "Caldithrixales",
+                "Caldithrixaceae",
+                "Caldithrix",
+            )
+        ),
+    )
+    assert result.gbif_usage_key == "3219768"
+    assert result.resolution_path == "leaf"
+    assert result.needs_review is False
 
 
 GBIF_INSECT_GENUS_NAMED_GENUS = _gbif_match(

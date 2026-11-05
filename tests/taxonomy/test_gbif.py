@@ -82,6 +82,28 @@ def test_higher_rank_and_fuzzy_match_types_from_raw():
     assert fuzzy.is_confident_match_type is False
 
 
+@pytest.mark.parametrize(
+    ("scientific_name", "canonical_name", "placeholder"),
+    [
+        ("Mesonia sp012964435", "Mesonia", True),
+        ("Prevotella sp. sp018385335", "Prevotella", True),
+        ("Paenibacillus_K guangzhouensis", "Paenibacillus", True),
+        ("Ruminococcus_E bromii_A", "Ruminococcus", True),
+        ("Paenibacillus guangzhouensis", "Paenibacillus spec.", True),
+        ("Prevotella copri", "Prevotella", False),
+        ("Prevotella Shah & Collins, 1990", "Prevotella", False),
+        ("Prevotella sp.", "Prevotella", False),
+    ],
+)
+def test_a_placeholder_species_is_named_by_its_full_scientific_name(
+    scientific_name, canonical_name, placeholder
+):
+    match = GbifMatch.from_raw(
+        {**AAPTOS_MATCH, "scientificName": scientific_name, "canonicalName": canonical_name}
+    )
+    assert match.name == (scientific_name if placeholder else canonical_name)
+
+
 def test_no_match_usage_key_is_none_and_taxon_concept_id_is_blank():
     match = GbifMatch.from_raw(NO_MATCH)
     assert match.usage_key is None
